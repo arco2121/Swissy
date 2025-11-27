@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Swissy">
         <activity
-            android:name=".MainActivity"
+            android:name=".App.Main"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

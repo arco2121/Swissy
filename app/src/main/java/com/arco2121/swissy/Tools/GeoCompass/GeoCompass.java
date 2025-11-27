@@ -19,6 +19,9 @@ public class GeoCompass {
     private long lastShapeTimestamp = 0;
     private boolean isCalibrating = false;
     private boolean calibration = false;
+    private SensorEventListener rotationListener;
+    private SensorEventListener magneticListener;
+    private SensorEventListener accelListener;
 
     public void setListener(GeoCompassListener listener) {
         this.listener = listener;
@@ -61,12 +64,18 @@ public class GeoCompass {
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
-
+    }
+    public void startSensors() {
         sm.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
         sm.registerListener(magneticListener, magneticSensor, SensorManager.SENSOR_DELAY_GAME);
         sm.registerListener(accelListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
 
+    public void stopSensors() {
+        sm.unregisterListener(rotationListener, rotationSensor);
+        sm.unregisterListener(magneticListener, magneticSensor);
+        sm.unregisterListener(accelListener, accelerometer);
+    }
     private void getNorth(SensorEvent event) {
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
         SensorManager.getOrientation(rotationMatrix, orientation);
