@@ -13,16 +13,15 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.arco2121.swissy.R;
 import com.arco2121.swissy.App.Managers.*;
-import com.arco2121.swissy.Tools.*;
 import com.arco2121.swissy.Tools.GeoCompass.*;
 import com.arco2121.swissy.Tools.Livella.*;
 import com.google.android.gms.location.*;
 
 public class Main extends AppCompatActivity implements GeoCompassListener, LivellaListener {
     private PermissionManager permissionManager;
-    private LocationManager locationManager;
+    private LocationProvider locationManager;
     private Location location;
-    private final SensorManager sensors = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+    private SensorManager sensors;
     private GeoCompass compass;
     private Livella livella;
 
@@ -37,12 +36,13 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Livel
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        locationManager = new LocationManager(LocationServices.getFusedLocationProviderClient(this));
         permissionManager = new PermissionManager(this, locationManager.requestCode);
         permissionManager.requestPermissions(new PermissionManager.Callback() {
             @Override
             public void onGranted() {
                 LogPrinter.printToast(Main.this, "Granted");
+                sensors = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+                locationManager = new LocationProvider(LocationServices.getFusedLocationProviderClient(this), getSystemService(Context.LOCATION_SERVICE));
                 locationManager.getLocation(permissionManager, locationRequested -> location = locationRequested);
                 compass = new GeoCompass(sensors, location);
                 livella = new Livella(sensors);

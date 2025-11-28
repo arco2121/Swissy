@@ -20,6 +20,9 @@ public class PermissionManager {
         this.activity = activity;
         this.requestCode = requestCode;
     }
+    public boolean hasPlayServices(Context context) {
+        return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS;
+    }
     public boolean hasPermissions(String[] permissions) {
         for (String perm : permissions) {
             if (ContextCompat.checkSelfPermission(activity, perm) != PackageManager.PERMISSION_GRANTED) {

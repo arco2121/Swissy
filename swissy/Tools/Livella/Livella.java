@@ -2,7 +2,7 @@ package com.arco2121.swissy.Tools.Livella;
 
 import android.hardware.*;
 
-public class Livella {
+public class Livella implements ToolStructure {
     private final SensorManager sensorManager;
     private final Sensor rotationSensor;
     private LivellaListener listener;
@@ -29,7 +29,15 @@ public class Livella {
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
+        startSensors();
+    }
+    @Override
+    public void startSensors() {
         sensorManager.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+    }
+    @Override
+    public void stopSensors() {
+        sensorManager.unregisterListener(rotationListener, rotationSensor);
     }
 
     private void getLevel(SensorEvent event) {

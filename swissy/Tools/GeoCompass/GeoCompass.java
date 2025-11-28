@@ -3,7 +3,7 @@ package com.arco2121.swissy.Tools.GeoCompass;
 import android.hardware.*;
 import android.location.Location;
 
-public class GeoCompass {
+public class GeoCompass implements ToolStructure {
     private GeoCompassListener listener;
     private SensorManager sm;
     private Sensor rotationSensor;
@@ -23,11 +23,7 @@ public class GeoCompass {
     private SensorEventListener magneticListener;
     private SensorEventListener accelListener;
 
-    public void setListener(GeoCompassListener listener) {
-        this.listener = listener;
-    }
-
-    public GeoCompass(SensorManager sm, Location location) {
+    public GeoCompass(SensorManager sm, Location location, GeoCompassListener listener) {
         this.sm = sm;
         rotationSensor = sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
         magneticSensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -64,18 +60,26 @@ public class GeoCompass {
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
+        startSensors();
+        this.setListener(listener);
     }
+    @Override
     public void startSensors() {
         sm.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
         sm.registerListener(magneticListener, magneticSensor, SensorManager.SENSOR_DELAY_GAME);
         sm.registerListener(accelListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
-
+    @Override
     public void stopSensors() {
         sm.unregisterListener(rotationListener, rotationSensor);
         sm.unregisterListener(magneticListener, magneticSensor);
         sm.unregisterListener(accelListener, accelerometer);
     }
+    @Override
+    public void setListener(GeoCompassListener listener) {
+        this.listener = listener;
+    }
+
     private void getNorth(SensorEvent event) {
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
         SensorManager.getOrientation(rotationMatrix, orientation);
