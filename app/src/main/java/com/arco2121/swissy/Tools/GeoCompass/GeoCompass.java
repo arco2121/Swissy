@@ -1,9 +1,13 @@
 package com.arco2121.swissy.Tools.GeoCompass;
 
+import android.content.Context;
 import android.hardware.*;
 import android.location.Location;
 
+import com.arco2121.swissy.Managers.LogPrinter;
 import com.arco2121.swissy.Tools.ToolStructure;
+
+import java.util.Objects;
 
 public class GeoCompass implements ToolStructure {
     private GeoCompassListener listener;
@@ -12,41 +16,53 @@ public class GeoCompass implements ToolStructure {
     private final Sensor magneticSensor;
     private final Sensor accelerometer;
     private GeomagneticField geoField;
-    private float north = 0f;
-    private float truenorth = 0f;
-    private float[] rotationMatrix = new float[9];
-    private float[] orientation = new float[3];
-    private float magneticStrength = 0f;
-    private float magneticLevel = 0f;
+    private final float[] rotationMatrix = new float[9];
+    private final float[] orientation = new float[3];
+    private final float[] accelValues = new float[3];
+    private final float[] magnetValues = new float[3];
     private long lastShapeTimestamp = 0;
     private boolean isCalibrating = false;
     private boolean calibration = false;
     private SensorEventListener rotationListener;
     private SensorEventListener magneticListener;
     private SensorEventListener accelListener;
+    private Float targetAzimuth = null;
+    private boolean setCustomNorth;
+    private boolean accelReady = false;
+    private boolean magnetReady = false;
 
-    public GeoCompass(SensorManager sm, Location location, GeoCompassListener listener) {
+    public GeoCompass(SensorManager sm, Location location) throws Exception {
         this.sm = sm;
         rotationSensor = sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
         magneticSensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if(magneticSensor == null || accelerometer== null) throw new Exception("Compass not available");
         geoField = new GeomagneticField(
                 (float) location.getLatitude(),
                 (float) location.getLongitude(),
                 (float) location.getAltitude(),
                 System.currentTimeMillis()
         );
-        SensorEventListener rotationListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                getNorth(event);
-            }
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
-        };
+        if(rotationSensor != null) {
+            SensorEventListener rotationListener = new SensorEventListener() {
+                @Override
+                public void onSensorChanged(SensorEvent event) {
+                    getNorth(event);
+                }
+                @Override
+                public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+            };
+        }
         SensorEventListener magneticListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
+                System.arraycopy(event.values, 0, magnetValues, 0, 3);
+                magnetReady = true;
+                if(rotationSensor == null && accelReady) {
+                    getNorth(null);
+                    accelReady = false;
+                    magnetReady = false;
+                }
                 getInterference(event);
             }
             @Override
@@ -55,24 +71,29 @@ public class GeoCompass implements ToolStructure {
         SensorEventListener accelListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                if(calibration)
-                    doCalibrate(event);
+                System.arraycopy(event.values, 0, accelValues, 0, 3);
+                accelReady = true;
+                if(rotationSensor == null && magnetReady) {
+                    getNorth(null);
+                    accelReady = false;
+                    magnetReady = false;
+                }
+                if(calibration) doCalibrate(event);
             }
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
         startSensors();
-        this.setListener(listener);
     }
     @Override
     public void startSensors() {
-        sm.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+        if(rotationSensor != null) sm.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
         sm.registerListener(magneticListener, magneticSensor, SensorManager.SENSOR_DELAY_GAME);
         sm.registerListener(accelListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
     @Override
     public void stopSensors() {
-        sm.unregisterListener(rotationListener, rotationSensor);
+        if(rotationSensor != null) sm.unregisterListener(rotationListener, rotationSensor);
         sm.unregisterListener(magneticListener, magneticSensor);
         sm.unregisterListener(accelListener, accelerometer);
     }
@@ -82,20 +103,39 @@ public class GeoCompass implements ToolStructure {
     }
 
     private void getNorth(SensorEvent event) {
-        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-        SensorManager.getOrientation(rotationMatrix, orientation);
-        float rawAzimuth = (float) Math.toDegrees(orientation[0]);
-        north = (rawAzimuth + 360) % 360;
-        truenorth = correctDeclination(north);
+        float rawAzimuth = 0f;
+        if(rotationSensor != null && event != null) {
+            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+            SensorManager.getOrientation(rotationMatrix, orientation);
+            rawAzimuth = (float) Math.toDegrees(orientation[0]);
+        } else {
+            float[] R = new float[9];
+            float[] I = new float[9];
+            boolean success = SensorManager.getRotationMatrix(R, I, accelValues, magnetValues);
+            if (!success) return;
+            float[] orientation = new float[3];
+            SensorManager.getOrientation(R, orientation);
+            rawAzimuth = (float) Math.toDegrees(orientation[0]);
+        }
+        float north = (rawAzimuth + 360) % 360;
+        float truenorth = correctDeclination(north);
+        float outputNorth;
+        if(setCustomNorth) {
+            targetAzimuth = truenorth;
+            setCustomNorth = false;
+        }
+        else targetAzimuth = null;
+        outputNorth = Objects.requireNonNullElse(targetAzimuth, truenorth);
         if (listener != null) {
-            listener.onCompassUpdate(north, truenorth);
+            listener.onCompassUpdate(north, outputNorth);
         }
     }
     private void getInterference(SensorEvent event) {
         float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
-        magneticStrength = (float) Math.sqrt(x * x + y * y + z * z);
+        float magneticStrength = (float) Math.sqrt(x * x + y * y + z * z);
+        float magneticLevel = 0f;
         if (magneticStrength < 20) magneticLevel = 1;
         else if (magneticStrength <= 65) magneticLevel = 0;
         else if (magneticStrength <= 90) magneticLevel = 2;

@@ -29,10 +29,11 @@ public class Torch implements ToolStructure {
     public boolean toggleTorch = false;
     public static final String[] permissionList = {Manifest.permission.CAMERA};
 
-    public Torch(SensorManager sm, CameraManager cm, TorchListener listener) {
+    public Torch(SensorManager sm, CameraManager cm) throws Exception {
         this.sm = sm;
         this.cm = cm;
         brightnessSensor = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
+        if(brightnessSensor == null) throw new Exception("Torch not available");
         brightnessListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
@@ -42,7 +43,6 @@ public class Torch implements ToolStructure {
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
         startSensors();
-        setListener(listener);
     }
     @Override
     public void startSensors() {

@@ -10,12 +10,15 @@ import com.arco2121.swissy.Tools.Torch.TorchListener;
 public class AmbientStatus implements ToolStructure {
     private final SensorManager sm;
     private final Sensor umiditySensor;
+    private final Sensor pressureSensor;
     private TorchListener listener;
     private SensorEventListener brightnessListener;
 
-    public AmbientStatus(SensorManager sm) {
+    public AmbientStatus(SensorManager sm) throws Exception {
         this.sm = sm;
         umiditySensor = sm.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
+        pressureSensor = sm.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        if(umiditySensor == null || pressureSensor == null) throw new Exception("Status not available");
     }
 
     @Override

@@ -7,13 +7,16 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.annotation.NonNull;
+
 import com.arco2121.swissy.Managers.*;
 import com.arco2121.swissy.Tools.AmbientStatus.AmbientStatus;
 import com.arco2121.swissy.Tools.GeoCompass.*;
@@ -21,16 +24,16 @@ import com.arco2121.swissy.Tools.Livella.*;
 import com.arco2121.swissy.Tools.Torch.*;
 import com.google.android.gms.location.*;
 
-public class Main extends AppCompatActivity implements GeoCompassListener, LivellaListener, TorchListener {
+public class Main extends AppCompatActivity {
     private PermissionManager permissionManager;
     private LocationProvider locationManager;
     private Location location;
     private SensorManager sensors;
     private CameraManager camera;
-    private GeoCompass compass;
-    private AmbientStatus ambientStatus;
-    private Livella livella;
-    private Torch torch;
+    private GeoCompass compass = null;
+    private AmbientStatus ambientStatus = null;
+    private Livella livella = null;
+    private Torch torch = null;
 
     //App
     @Override
@@ -44,108 +47,67 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Livel
             return insets;
         });
         //Initialize components
-        permissionManager = new PermissionManager(this);
         sensors = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         camera = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-        permissionManager.requestPermissions(new PermissionManager.Callback() {
-            @Override
-            public void onGranted() {
-                LogPrinter.printToast(Main.this, "Granted");
-                locationManager = new LocationProvider(LocationServices.getFusedLocationProviderClient(Main.this), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
-                locationManager.getLocation(permissionManager, locationRequested -> {
-                    location = locationRequested;
-                    compass = new GeoCompass(sensors, location,Main.this);
-                });
-            }
-
-            @Override
-            public void onDenied() {
-                if (permissionManager.askAgain(Main.this, LocationProvider.permissionList)) {
-                    LogPrinter.printToast(Main.this, "Location required for the app to work");
-                    permissionManager.requestPermissions(this, LocationProvider.permissionList);
-                } else {
-                    LogPrinter.printToast(Main.this, "Enable location permission from Settings");
-                    permissionManager.openSettings(Main.this);
-                }
-            }
-        }, LocationProvider.permissionList);
-        permissionManager.requestPermissions(new PermissionManager.Callback() {
-            @Override
-            public void onGranted() {
-                torch = new Torch(sensors, camera, Main.this);
-            }
-
-            public void onDenied() {
-                if (permissionManager.askAgain(Main.this, Torch.permissionList)) {
-                    LogPrinter.printToast(Main.this, "Camera required to torn on the torch");
-                    permissionManager.requestPermissions(this, Torch.permissionList);
-                } else {
-                    LogPrinter.printToast(Main.this, "Enable camera permission from Settings");
-                    permissionManager.openSettings(Main.this);
-                }
-            }
-        },Torch.permissionList);
-        livella = new Livella(sensors, Main.this);
-        ambientStatus = new AmbientStatus(sensors);
+        permissionManager = new PermissionManager(this);
+        locationManager = new LocationProvider(LocationServices.getFusedLocationProviderClient(Main.this), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
+        locationManager.getLocation(permissionManager, locationRequested -> {
+            location = locationRequested;
+            try { compass = (GeoCompass) SharedObjects.addObj("compass", new GeoCompass(sensors, location)); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { torch = (Torch) SharedObjects.addObj("torch" , new Torch(sensors, camera)); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { livella = (Livella) SharedObjects.addObj("livella" , new Livella(sensors)); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { ambientStatus = (AmbientStatus) SharedObjects.addObj("status" , new AmbientStatus(sensors)); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            LogPrinter.printToast(this, SharedObjects.asString());
+        });
+        //UI components
+        ImageButton settings = findViewById(R.id.settingsBt);
+        settings.setOnTouchListener((v, event) -> {
+            animateButton(v, event);
+            return false;
+        });
     }
     @Override
     protected void onPause() {
         super.onPause();
-        if(compass != null) compass.stopSensors();
-        if(livella != null) livella.stopSensors();
-        if(torch != null) torch.stopSensors();
+        if (compass != null) compass.stopSensors();
+        if (livella != null) livella.stopSensors();
+        if (torch != null) torch.stopSensors();
     }
     @Override
     protected void onResume() {
         super.onResume();
-        if(compass != null) compass.startSensors();
-        if(livella != null) livella.startSensors();
-        if(torch != null) torch.startSensors();
-    }
-    //Catch the permissions results
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        permissionManager.redirectResults(requestCode, grantResults);
+        if (compass != null) compass.startSensors();
+        if (livella != null) livella.startSensors();
+        if (torch != null) torch.startSensors();
     }
 
-    //Livella's Data Update
-    @Override
-    public void onLevelChange(float rotation, float pitch, float roll) {
-
+    //UI
+    void animateButton(View window, MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                window.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).start();
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                window.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                break;
+        }
     }
 
-    //GeoCompass's Data Update
-    @Override
-    public void onCompassUpdate(float magneticAzimuth, float trueAzimuth) {
-
-    }
-    @Override
-    public void onMagneticInterference(float strength, int level) {
-
-    }
-    @Override
-    public void onCalibrationStart() {
-
-    }
-    @Override
-    public void onCalibrationEnd() {
-
-    }
 
     //Torch's Data Update
-    @Override
+    /*@Override
     public void onTorchMoment(float brightness, boolean turnOn) {
-        if(!torch.toggleTorch) {
+        if (!torch.toggleTorch) {
             torch.setBrightness(this, -1);
             torch.useTorch(this, false);
             return;
         }
         torch.setBrightness(this, brightness);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             torch.useTorchByBrightness(this, brightness);
             return;
         }
         torch.useTorch(this, turnOn);
-    }
+    }*/
 }

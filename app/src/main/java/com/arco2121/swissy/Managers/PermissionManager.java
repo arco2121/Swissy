@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -19,7 +21,7 @@ import java.util.Random;
 public class PermissionManager {
     public interface Callback {
         void onGranted();
-        void onDenied();
+        void onDenied(String[] denied);
     }
 
     private final Activity activity;
@@ -53,7 +55,8 @@ public class PermissionManager {
         return true;
     }
     public void requestPermissions(Callback callback, String ...permissions) {
-        int requestCode = requestCoder.nextInt();
+        int requestCode = requestCoder.nextInt(1000, 10000);
+        System.out.println(requestCode);
         callbacks.put(requestCode,callback);
         if (hasPermissions(permissions)) {
             callback.onGranted();
@@ -62,20 +65,23 @@ public class PermissionManager {
         ActivityCompat.requestPermissions(activity, permissions, requestCode);
     }
     //To add on the onRequestPermissionsResult overload of the main activity
-    public void redirectResults(int reqCode, @NonNull int[] grantResults) {
+    public void redirectResults(int reqCode, String[] permissions, @NonNull int[] grantResults) {
         Callback callback = callbacks.remove(reqCode);
+        ArrayList<String> notGranted = new ArrayList<>();
         if (callback == null) return;
         boolean allGranted = true;
+        int i = 0;
         for (int res : grantResults) {
             if (res != PackageManager.PERMISSION_GRANTED) {
                 allGranted = false;
-                break;
+                notGranted.add(permissions[i]);
             }
+            i++;
         }
         if (allGranted) {
             callback.onGranted();
         } else {
-            callback.onDenied();
+            callback.onDenied(notGranted.toArray(new String[0]));
         }
     }
     public void openSettings(Activity activity) {

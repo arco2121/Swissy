@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Palette Night-->
+    <color name="background">#2B2422</color>
+    <color name="font_color">#FFFAF9</color>
+    <color name="tool">#C41C00</color>
+    <color name="tool_in">#B4B1B0</color>
+</resources>

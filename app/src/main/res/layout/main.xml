@@ -7,13 +7,46 @@
     android:layout_height="match_parent"
     tools:context=".Main">
 
-    <TextView
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/tool"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_margin="20dp"/>
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:orientation="vertical"
+        android:layout_marginRight="25dp"
+        android:layout_marginTop="15dp">
+
+        <ImageButton
+            android:id="@+id/settingsBt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/settings"
+            android:background="@drawable/button_mask"
+            android:backgroundTint="@color/tool"
+            app:tint="@color/tool_in"
+            android:padding="8dp"
+            android:contentDescription="Settings"/>
+
+        <ImageButton
+            android:id="@+id/currentstatus"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:src="@drawable/compass"
+            android:background="@drawable/button_mask"
+            app:tint="@color/background"
+            android:padding="8dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="10dp"
+            android:contentDescription="Current Tool"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

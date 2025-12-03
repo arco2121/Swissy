@@ -17,9 +17,10 @@ public class Livella implements ToolStructure {
     public float smoothness = 0.2f;
     private static final float RAD_TO_DEG = (float) (180.0 / Math.PI);
 
-    public Livella(@NonNull SensorManager sm, LivellaListener listener) {
+    public Livella(@NonNull SensorManager sm) throws Exception {
         this.sensorManager = sm;
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        if(rotationSensor == null) throw new Exception("Livella not available");
         SensorEventListener rotationListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -29,7 +30,6 @@ public class Livella implements ToolStructure {
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
         startSensors();
-        setListener(listener);
     }
     @Override
     public void startSensors() {

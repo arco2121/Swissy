@@ -1,0 +1,21 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.arco2121.swissy">
+
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:icon="@mipmap/icon_dark"
+        android:roundIcon="@mipmap/icon_dark"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Swissy">
+
+        <activity android:name=".Starter">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>
