@@ -1,4 +1,4 @@
-package com.arco2121.swissy.Managers;
+package com.arco2121.swissy.Utility;
 
 import android.content.Context;
 import android.widget.Toast;

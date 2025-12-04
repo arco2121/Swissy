@@ -12,7 +12,7 @@ import android.os.Build;
 import android.view.WindowManager;
 import androidx.annotation.RequiresApi;
 
-import com.arco2121.swissy.Managers.LogPrinter;
+import com.arco2121.swissy.Utility.LogPrinter;
 import com.arco2121.swissy.Tools.ToolStructure;
 
 public class Torch implements ToolStructure {

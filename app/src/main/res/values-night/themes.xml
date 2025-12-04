@@ -15,5 +15,9 @@
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:textSize">23sp</item>
+        <item name="android:textColor">@color/font_color</item>
+        <item name="android:fontFamily">@font/font</item>
+        <item name="android:fontWeight">600</item>
     </style>
 </resources>

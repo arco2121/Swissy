@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.arco2121.swissy.Managers.LocationProvider;
-import com.arco2121.swissy.Managers.LogPrinter;
+import com.arco2121.swissy.Utility.LogPrinter;
 import com.arco2121.swissy.Managers.PermissionManager;
 import com.arco2121.swissy.Tools.Torch.Torch;
 
@@ -23,7 +23,7 @@ public class Starter extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         permissionManager = new PermissionManager(this);
-        setContentView(R.layout.splashscreen);
+        setContentView(R.layout.starter);
         FrameLayout logo = findViewById(R.id.logo);
         logo.setScaleX(0.8f);
         logo.setAlpha(0f);

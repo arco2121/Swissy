@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Swissy</string>
-    <string name="settings">Settings</string>
-    <string name="current">Current Tool</string>
-    <string name="current_tool">@drawable/compass</string>
+    <integer name="scalePlus">110</integer>
+    <integer name="scaleMinus">90</integer>
+    <integer name="icon_duration">100</integer>
+    <integer name="icon_duration_long">200</integer>
 </resources>

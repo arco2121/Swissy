@@ -1,10 +1,8 @@
 package com.arco2121.swissy.Tools.GeoCompass;
 
-import android.content.Context;
 import android.hardware.*;
 import android.location.Location;
 
-import com.arco2121.swissy.Managers.LogPrinter;
 import com.arco2121.swissy.Tools.ToolStructure;
 
 import java.util.Objects;
