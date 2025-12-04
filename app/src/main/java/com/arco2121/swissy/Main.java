@@ -1,6 +1,8 @@
 package com.arco2121.swissy;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.hardware.*;
 import android.hardware.camera2.CameraManager;
 import android.location.Location;
@@ -23,6 +25,11 @@ import com.arco2121.swissy.Tools.GeoCompass.*;
 import com.arco2121.swissy.Tools.Livella.*;
 import com.arco2121.swissy.Tools.Torch.*;
 import com.google.android.gms.location.*;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import kotlin.jvm.internal.Lambda;
 
 public class Main extends AppCompatActivity {
     private PermissionManager permissionManager;
@@ -62,7 +69,7 @@ public class Main extends AppCompatActivity {
         //UI components
         ImageButton settings = findViewById(R.id.settingsBt);
         settings.setOnTouchListener((v, event) -> {
-            animateButton(v, event);
+            animateButton((ImageButton) v, event);
             return false;
         });
     }
@@ -82,14 +89,18 @@ public class Main extends AppCompatActivity {
     }
 
     //UI
-    void animateButton(View window, MotionEvent event) {
+    @SuppressLint("ResourceAsColor")
+    void animateButton(ImageButton window, MotionEvent event, Consumer<MotionEvent> func) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                window.setImageTintList(ColorStateList.valueOf(R.color.tool_in));
                 window.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).start();
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                window.setImageTintList(ColorStateList.valueOf(R.color.background));
                 window.animate().scaleX(1f).scaleY(1f).setDuration(100).start();
+                window.performClick();
                 break;
         }
     }

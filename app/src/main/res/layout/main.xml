@@ -41,7 +41,7 @@
             android:layout_height="60dp"
             android:src="@string/current_tool"
             android:background="@drawable/button_mask"
-            app:tint="@color/tool_in"
+            app:tint="@color/background"
             android:padding="8dp"
             android:layout_marginTop="15dp"
             android:layout_marginBottom="10dp"
