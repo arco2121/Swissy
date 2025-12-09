@@ -2,10 +2,7 @@ package com.arco2121.swissy.Tools.GeoCompass;
 
 import android.hardware.*;
 import android.location.Location;
-
 import com.arco2121.swissy.Tools.ToolStructure;
-
-import java.util.Objects;
 
 public class GeoCompass implements ToolStructure {
     private GeoCompassListener listener;
@@ -19,15 +16,22 @@ public class GeoCompass implements ToolStructure {
     private final float[] accelValues = new float[3];
     private final float[] magnetValues = new float[3];
     private long lastShapeTimestamp = 0;
-    private boolean isCalibrating = false;
-    private boolean calibration = false;
+    public boolean isCalibrating = false;
+    public boolean calibration = false;
     private SensorEventListener rotationListener;
-    private SensorEventListener magneticListener;
-    private SensorEventListener accelListener;
-    private Float targetAzimuth = null;
-    private boolean setCustomNorth;
+    private final SensorEventListener magneticListener;
+    private final SensorEventListener accelListener;
+    private Float customNorth = null;
     private boolean accelReady = false;
     private boolean magnetReady = false;
+    private float filteredAzimuth = 0f;
+    private boolean aziReady = false;
+    public final float ALPHA = 0.04f;
+
+    private int magneticAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+    private int accelAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+    private long lastAccuracyWarning = 0;
+    private final long ACCURACY_WARNING_DELAY = 5000;
 
     public GeoCompass(SensorManager sm, Location location) throws Exception {
         this.sm = sm;
@@ -42,20 +46,21 @@ public class GeoCompass implements ToolStructure {
                 System.currentTimeMillis()
         );
         if(rotationSensor != null) {
-            SensorEventListener rotationListener = new SensorEventListener() {
+            rotationListener = new SensorEventListener() {
                 @Override
                 public void onSensorChanged(SensorEvent event) {
                     getNorth(event);
                 }
                 @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+                public void onAccuracyChanged(Sensor sensor, int accuracy) {
+                    handleAccuracyChange(sensor, accuracy);
+                }
             };
         }
-        SensorEventListener magneticListener = new SensorEventListener() {
+        magneticListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                System.arraycopy(event.values, 0, magnetValues, 0, 3);
-                magnetReady = true;
+                applyLowPass(event);
                 if(rotationSensor == null && accelReady) {
                     getNorth(null);
                     accelReady = false;
@@ -64,13 +69,14 @@ public class GeoCompass implements ToolStructure {
                 getInterference(event);
             }
             @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+                handleAccuracyChange(sensor, accuracy);
+            }
         };
-        SensorEventListener accelListener = new SensorEventListener() {
+        accelListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                System.arraycopy(event.values, 0, accelValues, 0, 3);
-                accelReady = true;
+                applyLowPass(event);
                 if(rotationSensor == null && magnetReady) {
                     getNorth(null);
                     accelReady = false;
@@ -79,61 +85,128 @@ public class GeoCompass implements ToolStructure {
                 if(calibration) doCalibrate(event);
             }
             @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+                handleAccuracyChange(sensor, accuracy);
+            }
         };
         startSensors();
     }
+
+    private void handleAccuracyChange(Sensor sensor, int accuracy) {
+        int type = sensor.getType();
+
+        if (type == Sensor.TYPE_MAGNETIC_FIELD) {
+            magneticAccuracy = accuracy;
+        } else if (type == Sensor.TYPE_ACCELEROMETER) {
+            accelAccuracy = accuracy;
+        } else if (type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR ||
+                type == Sensor.TYPE_ROTATION_VECTOR) {
+            magneticAccuracy = accuracy;
+            accelAccuracy = accuracy;
+        }
+
+        long currentTime = System.currentTimeMillis();
+
+        if (accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
+            aziReady = false;
+            filteredAzimuth = 0f;
+            accelReady = false;
+            magnetReady = false;
+
+            if (currentTime - lastAccuracyWarning > ACCURACY_WARNING_DELAY) {
+                if (listener != null) {
+                    listener.onAccuracy("To much noise");
+                }
+                lastAccuracyWarning = currentTime;
+            }
+        } else if (accuracy == SensorManager.SENSOR_STATUS_ACCURACY_LOW) {
+            if (currentTime - lastAccuracyWarning > ACCURACY_WARNING_DELAY) {
+                if (listener != null && !isCalibrating) {
+                    listener.onAccuracy("Need recalibration");
+                }
+                lastAccuracyWarning = currentTime;
+            }
+        }
+    }
+
+    public int getOverallAccuracy() {
+        return Math.min(magneticAccuracy, accelAccuracy);
+    }
+
+    public boolean isAccurate() {
+        return getOverallAccuracy() >= SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM;
+    }
+
     @Override
     public void startSensors() {
-        if(rotationSensor != null) sm.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+        if(rotationSensor != null) {
+            sm.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+        }
         sm.registerListener(magneticListener, magneticSensor, SensorManager.SENSOR_DELAY_GAME);
         sm.registerListener(accelListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
     }
+
     @Override
     public void stopSensors() {
-        if(rotationSensor != null) sm.unregisterListener(rotationListener, rotationSensor);
+        if(rotationSensor != null) {
+            sm.unregisterListener(rotationListener, rotationSensor);
+        }
         sm.unregisterListener(magneticListener, magneticSensor);
         sm.unregisterListener(accelListener, accelerometer);
     }
+
     @Override
     public void setListener(Object listener) {
         this.listener = (GeoCompassListener) listener;
     }
 
     private void getNorth(SensorEvent event) {
-        float rawAzimuth = 0f;
-        if(rotationSensor != null && event != null) {
+        if (!isAccurate() && !aziReady) {
+            return;
+        }
+
+        float oldAzi = filteredAzimuth;
+        float rawAzimuth;
+        if (rotationSensor != null && event != null) {
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
             SensorManager.getOrientation(rotationMatrix, orientation);
             rawAzimuth = (float) Math.toDegrees(orientation[0]);
         } else {
             float[] R = new float[9];
             float[] I = new float[9];
-            boolean success = SensorManager.getRotationMatrix(R, I, accelValues, magnetValues);
-            if (!success) return;
-            float[] orientation = new float[3];
-            SensorManager.getOrientation(R, orientation);
-            rawAzimuth = (float) Math.toDegrees(orientation[0]);
+            if (!SensorManager.getRotationMatrix(R, I, accelValues, magnetValues))
+                return;
+
+            float[] ori = new float[3];
+            SensorManager.getOrientation(R, ori);
+            rawAzimuth = (float) Math.toDegrees(ori[0]);
         }
-        float north = (rawAzimuth + 360) % 360;
-        float truenorth = correctDeclination(north);
-        float outputNorth;
-        if(setCustomNorth) {
-            targetAzimuth = truenorth;
-            setCustomNorth = false;
+
+        float magnetic = (rawAzimuth + 360) % 360;
+        if (!aziReady) {
+            filteredAzimuth = magnetic;
+            aziReady = true;
+        } else {
+            float diff = magnetic - filteredAzimuth;
+            if (diff > 180f) diff -= 360f;
+            if (diff < -180f) diff += 360f;
+            filteredAzimuth += ALPHA * diff;
+            filteredAzimuth = (filteredAzimuth + 360f) % 360f;
         }
-        else targetAzimuth = null;
-        outputNorth = Objects.requireNonNullElse(targetAzimuth, truenorth);
-        if (listener != null) {
-            listener.onCompassUpdate(north, outputNorth);
-        }
+        float trueNorth = correctDeclination(filteredAzimuth);
+
+        float output = (customNorth != null) ? (filteredAzimuth - customNorth + 360f) % 360f : filteredAzimuth;
+
+        if (listener != null)
+            listener.onCompassUpdate(filteredAzimuth, oldAzi, trueNorth, output);
     }
+
     private void getInterference(SensorEvent event) {
         float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
         float magneticStrength = (float) Math.sqrt(x * x + y * y + z * z);
-        float magneticLevel = 0f;
+        float magneticLevel;
         if (magneticStrength < 20) magneticLevel = 1;
         else if (magneticStrength <= 65) magneticLevel = 0;
         else if (magneticStrength <= 90) magneticLevel = 2;
@@ -142,6 +215,7 @@ public class GeoCompass implements ToolStructure {
             listener.onMagneticInterference(magneticStrength, (int) magneticLevel);
         }
     }
+
     private void doCalibrate(SensorEvent event) {
         float ax = event.values[0];
         float ay = event.values[1];
@@ -159,9 +233,41 @@ public class GeoCompass implements ToolStructure {
             if (listener != null) listener.onCalibrationEnd();
         }
     }
+
     private float correctDeclination(double magneticAzimuth) {
         float decl = geoField.getDeclination();
         return (float)(magneticAzimuth + decl + 360) % 360;
+    }
+
+    private void applyLowPass(SensorEvent event) {
+        int type = event.sensor.getType();
+        if (type == Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR ||
+                type == Sensor.TYPE_ROTATION_VECTOR) {
+            return;
+        }
+        if (type == Sensor.TYPE_ACCELEROMETER) {
+            if (!accelReady) {
+                System.arraycopy(event.values, 0, accelValues, 0, 3);
+                accelReady = true;
+                return;
+            }
+            for (int i = 0; i < 3; i++) {
+                accelValues[i] = accelValues[i] + ALPHA * (event.values[i] - accelValues[i]);
+            }
+            accelReady = true;
+            return;
+        }
+        if (type == Sensor.TYPE_MAGNETIC_FIELD) {
+            if (!magnetReady) {
+                System.arraycopy(event.values, 0, magnetValues, 0, 3);
+                magnetReady = true;
+                return;
+            }
+            for (int i = 0; i < 3; i++) {
+                magnetValues[i] = magnetValues[i] + ALPHA * (event.values[i] - magnetValues[i]);
+            }
+            magnetReady = true;
+        }
     }
 
     public void updateLocation(Location location) {
@@ -172,7 +278,27 @@ public class GeoCompass implements ToolStructure {
                 System.currentTimeMillis()
         );
     }
-    public void toggleCalibration() {
-        calibration = !calibration;
+
+    public void setCustomNorth(float northDegrees) {
+        customNorth = (northDegrees + 360) % 360;
+    }
+
+    public void clearCustomNorth() {
+        customNorth = null;
+    }
+
+    public boolean isCustomNorthActive() {
+        return customNorth != null;
+    }
+
+    public static String getDirectionRange(float azimuth) {
+        if (azimuth >= 337.5 || azimuth < 22.5) return "N";
+        if (azimuth < 67.5) return "NE";
+        if (azimuth < 112.5) return "E";
+        if (azimuth < 157.5) return "SE";
+        if (azimuth < 202.5) return "S";
+        if (azimuth < 247.5) return "SO";
+        if (azimuth < 292.5) return "O";
+        return "NO";
     }
 }

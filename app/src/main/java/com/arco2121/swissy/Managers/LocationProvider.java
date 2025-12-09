@@ -16,6 +16,7 @@ public class LocationProvider {
         void onLocationReady(Location location);
     }
     private final FusedLocationProviderClient provider;
+    public Location location = null;
     private final LocationManager oldProvider;
     public static final String[] permissionList = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION };
 
@@ -31,6 +32,7 @@ public class LocationProvider {
         }
         provider.getLastLocation().addOnSuccessListener(loc -> {
             if (loc != null) {
+                location = loc;
                 callback.onLocationReady(loc);
             } else {
                 requestNewLocation(callback);
@@ -47,6 +49,7 @@ public class LocationProvider {
                     public void onLocationResult(@NonNull LocationResult res) {
                         provider.removeLocationUpdates(this);
                         if (res.getLastLocation() != null) {
+                            location = res.getLastLocation();
                             callback.onLocationReady(res.getLastLocation());
                         } else {
                             callback.onLocationReady(null);

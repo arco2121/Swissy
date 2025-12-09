@@ -10,10 +10,13 @@ public class Livella implements ToolStructure {
     private final SensorManager sensorManager;
     private final Sensor rotationSensor;
     private LivellaListener listener;
-    private SensorEventListener rotationListener;
+    private final SensorEventListener rotationListener;
     private float pitch = 0f;
     private float roll = 0f;
     private float azimuth = 0f;
+    private float pitchOffset = 0f;
+    private float rollOffset = 0f;
+    private float azimuthOffset = 0f;
     public float smoothness = 0.2f;
     private static final float RAD_TO_DEG = (float) (180.0 / Math.PI);
 
@@ -21,7 +24,7 @@ public class Livella implements ToolStructure {
         this.sensorManager = sm;
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         if(rotationSensor == null) throw new Exception("Livella not available");
-        SensorEventListener rotationListener = new SensorEventListener() {
+        rotationListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 getLevel(event);
@@ -31,17 +34,50 @@ public class Livella implements ToolStructure {
         };
         startSensors();
     }
+
     @Override
     public void startSensors() {
-        sensorManager.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+        if(rotationSensor != null) sensorManager.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
     }
+
     @Override
     public void stopSensors() {
-        sensorManager.unregisterListener(rotationListener, rotationSensor);
+        if(rotationSensor != null) sensorManager.unregisterListener(rotationListener, rotationSensor);
     }
+
     @Override
     public void setListener(Object listener) {
         this.listener = (LivellaListener) listener;
+    }
+
+    public void calibrate() {
+        pitchOffset = pitch;
+        rollOffset = roll;
+        azimuthOffset = azimuth;
+    }
+
+    public void resetCalibration() {
+        pitchOffset = 0f;
+        rollOffset = 0f;
+        azimuthOffset = 0f;
+    }
+
+    public float getCalibratedPitch() {
+        return pitch - pitchOffset;
+    }
+
+    public float getCalibratedRoll() {
+        return roll - rollOffset;
+    }
+
+    public float getCalibratedAzimuth() {
+        return normalizeAngle(azimuth - azimuthOffset);
+    }
+
+    private float normalizeAngle(float angle) {
+        while (angle > 180f) angle -= 360f;
+        while (angle < -180f) angle += 360f;
+        return angle;
     }
 
     private void getLevel(SensorEvent event) {
@@ -50,12 +86,21 @@ public class Livella implements ToolStructure {
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
         float[] orientation = new float[3];
         SensorManager.getOrientation(rotationMatrix, orientation);
+
         float newAzimuth = orientation[0] * RAD_TO_DEG;
         float newPitch = orientation[1] * RAD_TO_DEG;
         float newRoll  = orientation[2] * RAD_TO_DEG;
+
         azimuth = azimuth * (1 - smoothness) + newAzimuth * smoothness;
         pitch   = pitch   * (1 - smoothness) + newPitch   * smoothness;
         roll    = roll    * (1 - smoothness) + newRoll    * smoothness;
-        if(listener != null) listener.onLevelChange(azimuth, pitch, roll);
+
+        if(listener != null) {
+            listener.onLevelChange(
+                    getCalibratedAzimuth(),
+                    getCalibratedPitch(),
+                    getCalibratedRoll()
+            );
+        }
     }
 }

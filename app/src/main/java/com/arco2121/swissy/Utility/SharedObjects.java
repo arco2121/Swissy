@@ -11,8 +11,8 @@ import java.util.Map;
 public class SharedObjects {
     static final HashMap<String, Object[]> sharedObjects = new HashMap<>();
 
-    public static Object addObj(String key, Object io, int drawableResorce) {
-        Object[] entry = { io, drawableResorce };
+    public static Object addObj(String key, Object io, Object[] drawableResorces) {
+        Object[] entry = { io, drawableResorces };
         sharedObjects.put(key, entry);
         return io;
     }

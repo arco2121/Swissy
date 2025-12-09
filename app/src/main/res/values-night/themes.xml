@@ -4,6 +4,8 @@
 
         <item name="colorPrimary">@color/tool</item>
         <item name="colorSecondary">@color/tool_in</item>
+        <item name="android:windowSplashScreenBackground">@color/background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@null</item>
         <!--UI-->
         <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowBackground">@color/background</item>

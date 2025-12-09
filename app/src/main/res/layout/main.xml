@@ -11,15 +11,14 @@
     android:layout_marginTop="10dp">
 
     <ImageView
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:src="@drawable/tool"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        android:background="@drawable/icon_back"
         android:padding="4dp"
         android:layout_marginStart="25dp"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="5dp"/>
 
     <TextView
         android:id="@+id/currentstatuslabel"
@@ -44,8 +43,8 @@
 
         <ImageButton
             android:id="@+id/settingsBt"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:src="@drawable/settings"
             android:background="@drawable/button_mask"
             app:tint="@color/font_color"
@@ -55,7 +54,7 @@
         <ImageButton
             android:id="@+id/currentstatus"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:src="@drawable/fallback"
             android:background="@drawable/button_mask_tool"
             app:tint="@color/font_color"
@@ -63,9 +62,24 @@
             android:clickable="true"
             android:focusable="true"
             android:layout_marginTop="20dp"
-            android:paddingVertical="30dp"
+            android:paddingVertical="35dp"
             android:contentDescription="Select Tool"/>
 
     </LinearLayout>
+
+    <FrameLayout android:id="@+id/currentTool"
+        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_marginTop="160dp"
+        android:layout_marginBottom="40dp"
+        android:clickable="false"
+        android:descendantFocusability="afterDescendants"
+        android:focusable="false"
+        app:layout_constraintWidth_percent="0.8"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
