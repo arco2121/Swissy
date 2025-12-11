@@ -30,13 +30,13 @@ import com.arco2121.swissy.Tools.AmbientStatus.AmbientStatusListener;
 import com.arco2121.swissy.Tools.GeoCompass.*;
 import com.arco2121.swissy.Tools.Livella.*;
 import com.arco2121.swissy.Tools.Torch.*;
-import com.arco2121.swissy.Tools.Scale.*;
+import com.arco2121.swissy.Tools.Impact.*;
 import com.arco2121.swissy.Utility.LogPrinter;
 import com.arco2121.swissy.Utility.SharedObjects;
 import com.arco2121.swissy.Utility.SwipeDetect;
 import com.google.android.gms.location.*;
 
-public class Main extends AppCompatActivity implements GeoCompassListener, TorchListener, LivellaListener, ScaleListener, AmbientStatusListener {
+public class Main extends AppCompatActivity implements GeoCompassListener, TorchListener, LivellaListener, ImpactListener, AmbientStatusListener {
     private PermissionManager permissionManager;
     private LocationProvider locationManager;
     private SensorManager sensors;
@@ -45,7 +45,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private AmbientStatus ambientStatus = null;
     private Livella livella = null;
     private Torch torch = null;
-    private Scale scaleWeight = null;
+    private Impact impactWeight = null;
     String[] availableTools;
     int indexTool = 0;
     private float currentNorth = 0f;
@@ -73,7 +73,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         locationManager.getLocation(permissionManager, locationRequested -> {
             try { ambientStatus = (AmbientStatus) SharedObjects.addObj("Swissy" , new AmbientStatus(sensors),  new Object[]{ R.drawable.status, R.layout.status_view }); ambientStatus.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { compass = (GeoCompass) SharedObjects.addObj("Compass", new GeoCompass(sensors, locationRequested), new Object[]{ R.drawable.compass, R.layout.compass_view }); compass.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
-            try { scaleWeight = (Scale) SharedObjects.addObj("Scale", new Scale(sensors), new Object[]{ R.drawable.scale, R.layout.scale_view }); scaleWeight.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { impactWeight = (Impact) SharedObjects.addObj("Impact", new Impact(sensors), new Object[]{ R.drawable.impact, R.layout.impact_view}); impactWeight.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { torch = (Torch) SharedObjects.addObj("Torch" , new Torch(sensors, camera),  new Object[]{ R.drawable.torch, R.layout.torch_view }); torch.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { livella = (Livella) SharedObjects.addObj("Livella" , new Livella(sensors),  new Object[]{ R.drawable.livella, R.layout.livella_view }); livella.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             //UI
@@ -84,7 +84,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             float scale = (float) getResources().getInteger(R.integer.scaleMinus) / 100;
             long duration = getResources().getInteger(R.integer.icon_duration);
             float scale_long = (float) getResources().getInteger(R.integer.scalePlus) / 100;
-            float scale_long_log = (scale_long * 3) / 2.5f;
+            float scale_long_log = (scale_long * 2.5f) / 3;
             long duration_long = getResources().getInteger(R.integer.icon_duration_long);
             availableTools = SharedObjects.asArray();
             indexTool = SharedObjects.findIndex("Swissy");
@@ -97,7 +97,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             View vFi = getLayoutInflater().inflate(viewFi, currentTool, false);
             setupSpecificButtons(vFi);
             currentTool.addView(vFi);
-            SwipeDetect currentToolSelect = new SwipeDetect(this, 300, () -> {
+            SwipeDetect currentToolSelect = new SwipeDetect(this, 250, () -> {
                 if(indexTool + 1 < availableTools.length) indexTool++; else return;
                 Object[] toolPropriety = (Object[]) SharedObjects.getObj(availableTools[indexTool])[1];
                 int img = (int)toolPropriety[0];
@@ -119,7 +119,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                 currentTool.addView(v);
                 setupSpecificButtons(v);
                 title.setText(availableTools[indexTool]);
-            });
+            }, SwipeDetect.Direction.HORIZONTAL);
             settings.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {}, true));
             currentButton.setOnTouchListener((v, event) -> {
                 currentToolSelect.detector.onTouchEvent(event);
@@ -136,8 +136,8 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             torch.useTorch(this,false);
             torch.stopSensors();
         }
-        if(scaleWeight != null) {
-            scaleWeight.reset();
+        if(impactWeight != null) {
+            impactWeight.reset();
         }
     }
     @Override
@@ -146,8 +146,8 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         if (compass != null) compass.startSensors();
         if (livella != null) livella.startSensors();
         if (torch != null) torch.startSensors();
-        if(scaleWeight != null) {
-            scaleWeight.reset();
+        if(impactWeight != null) {
+            impactWeight.reset();
         }
     }
 
@@ -180,7 +180,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         TextView resetLi = toolView.findViewById(R.id.livellaReset);
         TextView doCalibrationLive = toolView.findViewById(R.id.livellaRecalibrate);
         TextView doMesure = toolView.findViewById(R.id.scaleMesure);
-        TextView doTare = toolView.findViewById(R.id.scaleTare);
+        TextView doReset = toolView.findViewById(R.id.scaleTare);
         TextView weight = toolView.findViewById(R.id.weight);
         TextView alti = toolView.findViewById(R.id.status_alti);
         TextView posi = toolView.findViewById(R.id.status_pos);
@@ -224,7 +224,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                     ));
                     torch.useTorch(this, false);
                 }
-                else if(torch.toggleTorch == 2)
+                else if(torch.toggleTorch == 1)
                     torchIco.setImageTintList(ColorStateList.valueOf(
                             ContextCompat.getColor(this, R.color.tool)
                     ));
@@ -234,7 +234,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                     ));
                     torch.useTorch(this, true);
                 }
-                torchMode.setText(String.format("Torch Mode : %s",torch.toggleTorch == 0 ? "Off" : (torch.toggleTorch == 1 ? "On" : "Auto")));
+                torchMode.setText(String.format("Torch Mode : %s",torch.toggleTorch == 0 ? "Off" : (torch.toggleTorch == 2 ? "On" : "Auto")));
             }, true));
         } else {
             torch.toggleTorch = 0;
@@ -250,14 +250,14 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             }, true));
         }
         if(doMesure != null) {
-            weight.setText("Weight : 0 g");
-            doTare.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
-                scaleWeight.reset();
-                weight.setText("Weight : 0 g");
+            weight.setText("Impact : ---");
+            doReset.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
+                impactWeight.reset();
+                weight.setText("Impact : ---");
             }, true));
             doMesure.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
-                scaleWeight.start();
-                weight.setText("Weight : --- g");
+                impactWeight.start();
+                weight.setText("Impact : ---");
             }, true));
         }
         if(posi != null) {
@@ -292,7 +292,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             RotateAnimation rotateNidleAnimation;
             if(compass.isCustomNorthActive()) {
                 rotateNidleAnimation = new RotateAnimation(-previousNeedleAzimuth, -nidleRotation, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-                degree.setText(String.format("%.0f°\n(%.1f° %s)", nidleRotation, trueAzimuth, direction));
+                degree.setText(String.format("%.0f°\n(%.0f° %s)", nidleRotation, trueAzimuth, direction));
                 previousNeedleAzimuth = nidleRotation;
                 compassGrid[1].startAnimation(rotateAnimation);
             } else {
@@ -378,7 +378,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                 }
                 return;
             }
-            if(torch.toggleTorch == 1) {
+            if(torch.toggleTorch == 2) {
                 if (lastTorchState || lastBrightnessSet != -1f) {
                     torch.setBrightness(this, -1);
                     torch.useTorch(this, true);
@@ -437,9 +437,21 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
 
     //Scale
     @Override
-    public void onWeightReady(float grams) {
+    public void onCalibrated() {
         TextView result = findViewById(R.id.weight);
-        result.setText(String.format("Weight : %.1f g", grams));
+        result.setText("Impact : Ready");
+    }
+
+    @Override
+    public void onCalibrationProgress(float value) {
+        TextView result = findViewById(R.id.weight);
+        result.setText(String.format("Impact : - %.0f -", value));
+    }
+
+    @Override
+    public void onImpact(float range, float filt, float raw) {
+        TextView result = findViewById(R.id.weight);
+        result.setText(String.format("Impact : %.1f m/s² (%.0f)", filt, range));
     }
 
     //Status
