@@ -55,7 +55,7 @@ public class PermissionManager {
         return true;
     }
     public void requestPermissions(Callback callback, String ...permissions) {
-        int requestCode = requestCoder.nextInt(1000, 10000);
+        int requestCode = requestCoder.nextInt(100000);
         System.out.println(requestCode);
         callbacks.put(requestCode,callback);
         if (hasPermissions(permissions)) {

@@ -54,6 +54,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private float lastBrightnessSet = -1f;
 
     //App
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +87,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             float scale_long_log = (scale_long * 3) / 2.5f;
             long duration_long = getResources().getInteger(R.integer.icon_duration_long);
             availableTools = SharedObjects.asArray();
+            indexTool = SharedObjects.findIndex("Swissy");
             Object[] toolProprietyFirst = (Object[]) SharedObjects.getObj(availableTools[indexTool])[1];
             int imgFi = (int)toolProprietyFirst[0];
             int viewFi = (int)toolProprietyFirst[1];
@@ -312,7 +314,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     public void onMagneticInterference(float strength, int level) {
         try {
             TextView result = findViewById(R.id.status_magne);
-            result.setText(String.format("Magnetic Interference : %s (%.0f)", level == 0 ? "Neutral" : level == 1 ? "Low" : level == 2 ? "Medium" : "High", strength));
+            result.setText(String.format("Interference : %s (%.0f)", level == 0 ? "Neutral" : level == 1 ? "Low" : level == 2 ? "Medium" : "High", strength));
         } catch (Exception ignored) { }
     }
 

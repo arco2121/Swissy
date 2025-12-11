@@ -28,7 +28,7 @@ public class Starter extends AppCompatActivity {
         logo.setScaleX(0.8f);
         logo.setAlpha(0f);
         logo.setScaleY(0.8f);
-        logo.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setInterpolator(new OvershootInterpolator(2f)).setDuration(350).setStartDelay(550)
+        logo.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setInterpolator(new OvershootInterpolator(2f)).setDuration(350).setStartDelay(750)
                 .withEndAction(this::redirect).start();
     }
     //Catch the permissions results

@@ -1,12 +1,8 @@
 package com.arco2121.swissy.Utility;
 
-import android.graphics.drawable.Drawable;
-
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SharedObjects {
     static final HashMap<String, Object[]> sharedObjects = new HashMap<>();
@@ -19,6 +15,7 @@ public class SharedObjects {
     public static Object[] getObj(String io) {
         return sharedObjects.get(io);
     }
+    public static int findIndex(String ele) { return asList().indexOf(ele); }
     public static String asString() {
         return sharedObjects.keySet().toString();
     }

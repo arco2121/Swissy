@@ -27,7 +27,7 @@ public class AmbientStatus implements ToolStructure {
 
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                if(listener != null) listener.onTemperature(sensorEvent.values[0]);
+                if(listener != null) listener.onTemperature(Math.max(0f, sensorEvent.values[0]));
             }
         };
         umiditySensorListen = new SensorEventListener() {
@@ -36,7 +36,7 @@ public class AmbientStatus implements ToolStructure {
 
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                if(listener != null) listener.onUmidity(sensorEvent.values[0]);
+                if(listener != null) listener.onUmidity(Math.max(0f, sensorEvent.values[0]));
             }
         };
         pressureSensorListen = new SensorEventListener() {
@@ -45,7 +45,7 @@ public class AmbientStatus implements ToolStructure {
 
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                if(listener != null) listener.onPressure(sensorEvent.values[0]);
+                if(listener != null) listener.onPressure(Math.max(0f, sensorEvent.values[0]));
             }
         };
         startSensors();
