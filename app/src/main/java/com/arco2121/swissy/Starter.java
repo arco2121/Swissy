@@ -46,7 +46,6 @@ public class Starter extends AppCompatActivity {
         permissionManager.requestPermissions(new PermissionManager.Callback() {
             @Override
             public void onGranted() {
-                LogPrinter.printToast(Starter.this, "Granted");
                 FrameLayout logo = findViewById(R.id.logo);
                 logo.animate().alpha(0f).scaleX(0.8f).scaleY(0.8f).setDuration(300).withEndAction(() -> {
                     //Load the app
