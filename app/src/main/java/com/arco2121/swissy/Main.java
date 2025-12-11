@@ -297,7 +297,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                 compassGrid[1].startAnimation(rotateAnimation);
             } else {
                 rotateNidleAnimation = new RotateAnimation(-previousNeedleAzimuth, 0, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-                degree.setText(String.format("%.0f° %s\n(%.2f°)", magneticAzimuth, direction, trueAzimuth));
+                degree.setText(String.format("%.0f° %s\n(%.1f°)", magneticAzimuth, direction, trueAzimuth));
                 previousNeedleAzimuth = previousNeedleAzimuth > 180 && previousNeedleAzimuth < 360 ? previousNeedleAzimuth + 10 : previousNeedleAzimuth < 180 && previousNeedleAzimuth > 0 ? previousNeedleAzimuth - 10 : 0f;
                 for (View imageView : compassGrid) {
                     imageView.startAnimation(rotateAnimation);

@@ -28,7 +28,7 @@ public class Starter extends AppCompatActivity {
         logo.setScaleX(0.8f);
         logo.setAlpha(0f);
         logo.setScaleY(0.8f);
-        logo.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setInterpolator(new OvershootInterpolator(2f)).setDuration(350).setStartDelay(750)
+        logo.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setInterpolator(new OvershootInterpolator(2f)).setDuration(450).setStartDelay(550)
                 .withEndAction(this::redirect).start();
     }
     //Catch the permissions results
@@ -47,7 +47,7 @@ public class Starter extends AppCompatActivity {
             @Override
             public void onGranted() {
                 FrameLayout logo = findViewById(R.id.logo);
-                logo.animate().alpha(0f).scaleX(0.8f).scaleY(0.8f).setDuration(300).withEndAction(() -> {
+                logo.animate().alpha(0f).scaleX(0.8f).scaleY(0.8f).setDuration(450).withEndAction(() -> {
                     //Load the app
                     Intent intent = new Intent(Starter.this, Main.class);
                     startActivity(intent);
