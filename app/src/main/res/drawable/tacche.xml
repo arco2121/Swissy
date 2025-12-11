@@ -10,18 +10,6 @@
 
     <group>
 
-        <group android:rotation="10" android:pivotX="50" android:pivotY="50">
-            <path  android:strokeLineCap="round" android:strokeWidth="1"
-                android:strokeColor="#AAFFFFFF"
-                android:pathData="M50,8 L50,14"/>
-        </group>
-
-        <group android:rotation="350" android:pivotX="50" android:pivotY="50">
-            <path  android:strokeLineCap="round" android:strokeWidth="1"
-                android:strokeColor="#AAFFFFFF"
-                android:pathData="M50,8 L50,14"/>
-        </group>
-
         <group android:rotation="20" android:pivotX="50" android:pivotY="50">
             <path  android:strokeLineCap="round" android:strokeWidth="1"
                 android:strokeColor="#AAFFFFFF"

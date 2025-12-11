@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/button_mask_tool"
+            android:padding="10dp"
+            android:gravity="center">
+
+            <TextView android:layout_gravity="center"
+                android:layout_width="match_parent"
+                android:id="@+id/status_temp"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:textSize="15dp"
+                android:layout_marginVertical="5dp"
+                android:text="Temperature : ---"/>
+
+            <TextView android:layout_gravity="center"
+                android:id="@+id/status_humidity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="15dp"
+                android:padding="22dp"
+                android:layout_marginVertical="5dp"
+                android:text="Humidity : ---"/>
+
+            <TextView android:layout_gravity="center"
+                android:id="@+id/status_pression"
+                android:layout_width="match_parent"
+                android:textSize="15dp"
+                android:padding="12dp"
+                android:layout_marginVertical="5dp"
+                android:layout_height="wrap_content"
+                android:text="Pression : ---"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/button_mask"
+            android:padding="25dp"
+            android:layout_marginVertical="35dp">
+
+            <TextView android:layout_gravity="center"
+                android:id="@+id/status_bri"
+                android:layout_width="match_parent"
+                android:layout_marginVertical="10dp"
+                android:textSize="18dp"
+                android:layout_height="wrap_content"
+                android:text="Brithness : ---"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/status_magne"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:layout_marginVertical="10dp"
+                android:text="Magnetic Interference : Neutral"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/status_alti"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="10dp"
+                android:textSize="18dp"
+                android:text="Altitude : ---"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:id="@+id/status_pos"
+                android:layout_height="wrap_content"
+                android:textSize="18dp"
+                android:layout_marginVertical="10dp"
+                android:text="LAT and LONG"/>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</LinearLayout>

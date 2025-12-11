@@ -28,7 +28,7 @@ public class Starter extends AppCompatActivity {
         logo.setScaleX(0.8f);
         logo.setAlpha(0f);
         logo.setScaleY(0.8f);
-        logo.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setInterpolator(new OvershootInterpolator(2f)).setDuration(350).setStartDelay(300)
+        logo.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setInterpolator(new OvershootInterpolator(2f)).setDuration(350).setStartDelay(550)
                 .withEndAction(this::redirect).start();
     }
     //Catch the permissions results
@@ -57,7 +57,8 @@ public class Starter extends AppCompatActivity {
                 }).start();
             }
 
-            @Override            public void onDenied(String[] denied) {
+            @Override
+            public void onDenied(String[] denied) {
                 StringBuilder listPerm = new StringBuilder();
                 for (String permission : denied) {
                     int find = java.util.Arrays.asList(LocationProvider.permissionList).indexOf(permission);
@@ -78,6 +79,7 @@ public class Starter extends AppCompatActivity {
                 } else {
                     LogPrinter.printToast(Starter.this, "Enable " + listPerm + " permission from Settings");
                     permissionManager.openSettings(Starter.this);
+                    finish();
                 }
             }
         }, permissionsNeeded.toArray(new String[0]));

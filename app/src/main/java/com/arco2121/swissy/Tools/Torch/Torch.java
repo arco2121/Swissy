@@ -21,25 +21,17 @@ public class Torch implements ToolStructure {
     private TorchListener listener;
     private final SensorEventListener brightnessListener;
     private float brightnessLux = -1f;
-
-    private final float TORCH_ON_THRESHOLD = 20f;
-    private final float TORCH_OFF_THRESHOLD = 25f;
-    private final float SMOOTHING_NORMAL = 0.25f;
-    private final float SMOOTHING_FAST = 0.7f;
-    private final float SPIKE_THRESHOLD = 50f;
-
+    private final float TORCH_ON_THRESHOLD = 15f;
+    private final float TORCH_OFF_THRESHOLD = 20f;
     private boolean manageTorch = false;
     private boolean isTorchCurrentlyOn = false;
     private long lastTorchChangeTime = 0;
     private final long TORCH_CHANGE_DELAY = 25;
-
     private final CameraManager cm;
-    public boolean toggleTorch = false;
-
+    public int toggleTorch = 0;
     private final Handler pollingHandler = new Handler();
     private final Runnable pollingRunnable;
     private final long POLLING_INTERVAL = 50;
-
     public static final String[] permissionList = {Manifest.permission.CAMERA};
 
     public Torch(SensorManager sm, CameraManager cm) throws Exception {
@@ -47,13 +39,13 @@ public class Torch implements ToolStructure {
         this.cm = cm;
         brightnessSensor = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
 
-        if(brightnessSensor == null)
-            throw new Exception("Torch not available");
+        if(brightnessSensor == null) throw new Exception("Torch not available");
 
         brightnessListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 onBrightness(sensorEvent);
+                if(listener != null) listener.onBrightness(sensorEvent.values[0]);
             }
 
             @Override
@@ -101,15 +93,7 @@ public class Torch implements ToolStructure {
     }
 
     private void onBrightness(SensorEvent event) {
-        float lux = event.values[0];
-
-        if (brightnessLux < 0) {
-            brightnessLux = lux;
-        } else {
-            float delta = Math.abs(lux - brightnessLux);
-            float smoothing = (delta > SPIKE_THRESHOLD) ? SMOOTHING_FAST : SMOOTHING_NORMAL;
-            brightnessLux = brightnessLux + smoothing * (lux - brightnessLux);
-        }
+        brightnessLux = event.values[0];
     }
 
     private void processBrightnessUpdate(float currentLux) {

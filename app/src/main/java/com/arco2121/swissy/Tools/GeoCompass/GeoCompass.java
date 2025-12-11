@@ -207,8 +207,8 @@ public class GeoCompass implements ToolStructure {
         float z = event.values[2];
         float magneticStrength = (float) Math.sqrt(x * x + y * y + z * z);
         float magneticLevel;
-        if (magneticStrength < 20) magneticLevel = 1;
-        else if (magneticStrength <= 65) magneticLevel = 0;
+        if (magneticStrength < 20) magneticLevel = 0;
+        else if (magneticStrength <= 65) magneticLevel = 1;
         else if (magneticStrength <= 90) magneticLevel = 2;
         else magneticLevel = 3;
         if (listener != null) {
