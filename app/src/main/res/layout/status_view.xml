@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -28,21 +29,21 @@
                     android:layout_height="20dp"
                     android:layout_marginHorizontal="10dp"
                     android:src="@drawable/dot_status"
-                    android:tint="@color/tool"/>
+                    app:tint="@color/tool" />
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/dot_status"
                     android:layout_marginHorizontal="10dp"
-                    android:tint="@color/font_color"/>
+                    app:tint="@color/font_color" />
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/dot_status"
                     android:layout_marginHorizontal="10dp"
-                    android:tint="@color/background"/>
+                    app:tint="@color/tool_in" />
 
             </LinearLayout>
 
@@ -94,21 +95,21 @@
                     android:layout_height="20dp"
                     android:layout_marginHorizontal="10dp"
                     android:src="@drawable/dot_status"
-                    android:tint="@color/tool_in"/>
+                    app:tint="@color/tool_in" />
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/dot_status"
                     android:layout_marginHorizontal="10dp"
-                    android:tint="@color/font_color"/>
+                    app:tint="@color/font_color" />
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/dot_status"
                     android:layout_marginHorizontal="10dp"
-                    android:tint="@color/background"/>
+                    app:tint="@color/background" />
 
             </LinearLayout>
 
