@@ -70,11 +70,11 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         permissionManager = new PermissionManager(this);
         locationManager = new LocationProvider(LocationServices.getFusedLocationProviderClient(Main.this), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
         locationManager.getLocation(permissionManager, locationRequested -> {
-            try { ambientStatus = (AmbientStatus) SharedObjects.addObj("Swizzy" , new AmbientStatus(sensors),  new Object[]{ R.drawable.status, R.layout.status_view }); ambientStatus.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { ambientStatus = (AmbientStatus) SharedObjects.addObj("Swissy" , new AmbientStatus(sensors),  new Object[]{ R.drawable.status, R.layout.status_view }); ambientStatus.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { compass = (GeoCompass) SharedObjects.addObj("Compass", new GeoCompass(sensors, locationRequested), new Object[]{ R.drawable.compass, R.layout.compass_view }); compass.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
-            try { livella = (Livella) SharedObjects.addObj("Livella" , new Livella(sensors),  new Object[]{ R.drawable.livella, R.layout.livella_view }); livella.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { scaleWeight = (Scale) SharedObjects.addObj("Scale", new Scale(sensors), new Object[]{ R.drawable.scale, R.layout.scale_view }); scaleWeight.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { torch = (Torch) SharedObjects.addObj("Torch" , new Torch(sensors, camera),  new Object[]{ R.drawable.torch, R.layout.torch_view }); torch.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { livella = (Livella) SharedObjects.addObj("Livella" , new Livella(sensors),  new Object[]{ R.drawable.livella, R.layout.livella_view }); livella.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             //UI
             ImageButton settings = findViewById(R.id.settingsBt);
             ImageButton currentButton = findViewById(R.id.currentstatus);
