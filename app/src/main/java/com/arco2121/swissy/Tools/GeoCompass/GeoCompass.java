@@ -27,11 +27,10 @@ public class GeoCompass implements ToolStructure {
     private float filteredAzimuth = 0f;
     private boolean aziReady = false;
     public final float ALPHA = 0.04f;
-
+    private final boolean[] cardinals = { false, false, false, false };
     private int magneticAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
     private int accelAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
     private long lastAccuracyWarning = 0;
-    private final long ACCURACY_WARNING_DELAY = 5000;
 
     public GeoCompass(SensorManager sm, Location location) throws Exception {
         this.sm = sm;
@@ -107,6 +106,7 @@ public class GeoCompass implements ToolStructure {
 
         long currentTime = System.currentTimeMillis();
 
+        long ACCURACY_WARNING_DELAY = 6000;
         if (accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
             aziReady = false;
             filteredAzimuth = 0f;
@@ -290,7 +290,33 @@ public class GeoCompass implements ToolStructure {
     public boolean isCustomNorthActive() {
         return customNorth != null;
     }
-
+    public boolean isCardinal(float azimuth) {
+        if (azimuth >= 355 || azimuth < 5) {
+            cardinals[1] = true;
+            cardinals[2] = true;
+            cardinals[3] = true;
+            return !cardinals[0];
+        }
+        else if(azimuth >= 85 && azimuth <= 95) {
+            cardinals[0] = true;
+            cardinals[2] = true;
+            cardinals[3] = true;
+            return !cardinals[1];
+        }
+        else if(azimuth >= 175 && azimuth <= 185) {
+            cardinals[0] = true;
+            cardinals[1] = true;
+            cardinals[3] = true;
+            return !cardinals[2];
+        }
+        else if(azimuth >= 265 && azimuth <= 275) {
+            cardinals[0] = true;
+            cardinals[2] = true;
+            cardinals[1] = true;
+            return !cardinals[3];
+        }
+        else return false;
+    }
     public static String getDirectionRange(float azimuth) {
         if (azimuth >= 337.5 || azimuth < 22.5) return "N";
         if (azimuth < 67.5) return "NE";

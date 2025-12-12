@@ -1,0 +1,45 @@
+package com.arco2121.swissy.Managers;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.preference.PreferenceManager;
+
+public class SettingsManager {
+
+    public static SharedPreferences getPropreties(Context ctx) {
+        return PreferenceManager.getDefaultSharedPreferences(ctx);
+    }
+
+    public static SharedPreferences.Editor getEditor(Context ctx) {
+        SharedPreferences temp = getPropreties(ctx);
+        SharedPreferences.Editor editorSettings = temp.edit();
+        //Settings di base di questa App
+        if(!temp.contains("theme")) {
+            editorSettings.putInt("theme", 0);
+            editorSettings.apply();
+        }
+        if(!temp.contains("energy_safer")) {
+            editorSettings.putBoolean("energy_safer", false);
+            editorSettings.apply();
+        }
+        if(!temp.contains("vibration")) {
+            editorSettings.putBoolean("vibration", true);
+            editorSettings.apply();
+        }
+        int now = temp.getInt("theme", 0);
+        switch (now) {
+            case 0 : AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            ); break;
+            case 1 : AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_NO
+            ); break;
+            case 2 : AppCompatDelegate.setDefaultNightMode(
+                    AppCompatDelegate.MODE_NIGHT_YES
+            );
+        }
+        return editorSettings;
+    }
+}

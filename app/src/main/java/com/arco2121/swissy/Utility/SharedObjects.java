@@ -1,5 +1,8 @@
 package com.arco2121.swissy.Utility;
 
+import android.view.MotionEvent;
+import android.view.View;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,5 +27,22 @@ public class SharedObjects {
     }
     public static String[] asArray() {
         return sharedObjects.keySet().toArray(new String[0]);
+    }
+
+    public static boolean animateButton(View window, MotionEvent event, float littleX, float littleY, long duration, Runnable func, boolean consumeEvent) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                window.animate().scaleX(littleX).scaleY(littleY).setDuration(duration).start();
+                break;
+
+            case MotionEvent.ACTION_UP:
+
+            case MotionEvent.ACTION_CANCEL:
+                window.animate().scaleX(1f).scaleY(1f).setDuration(duration)
+                        .withEndAction(func)
+                        .start();
+                break;
+        }
+        return consumeEvent;
     }
 }

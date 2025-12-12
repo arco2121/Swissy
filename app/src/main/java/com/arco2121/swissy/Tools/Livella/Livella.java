@@ -19,6 +19,7 @@ public class Livella implements ToolStructure {
     private float azimuthOffset = 0f;
     public float smoothness = 0.2f;
     private static final float RAD_TO_DEG = (float) (180.0 / Math.PI);
+    private boolean isCenter = false;
 
     public Livella(@NonNull SensorManager sm) throws Exception {
         this.sensorManager = sm;
@@ -78,6 +79,15 @@ public class Livella implements ToolStructure {
         while (angle > 180f) angle -= 360f;
         while (angle < -180f) angle += 360f;
         return angle;
+    }
+
+    public boolean isCenter(float x, float y) {
+        if(x < 0.15 || y < 0.15) {
+            return !isCenter;
+        } else {
+            isCenter = false;
+            return false;
+        }
     }
 
     private void getLevel(SensorEvent event) {
