@@ -57,7 +57,6 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private boolean blockForCalibration = false;
 
     //App
-    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,13 +125,11 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             settings.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
                 Intent intent = new Intent(Main.this, Settings.class);
                 startActivity(intent);
-                overridePendingTransition(android.R.anim.anticipate_overshoot_interpolator, android.R.anim.accelerate_decelerate_interpolator);
-                finish();
+                overridePendingTransition(R.anim.pop_start, R.anim.pop_end);
             }, true));
-            currentButton.setOnTouchListener((v, event) -> {
+            currentButton.setOnTouchListener((v, event) -> animateButton(v, event, scale_long, scale_long_log, duration_long, android.R.interpolator.anticipate, () -> {
                 currentToolSelect.detector.onTouchEvent(event);
-                return animateButton(v, event, scale_long, scale_long_log, duration_long, () -> {}, false);
-            });
+            },false));
         });
     }
     @Override

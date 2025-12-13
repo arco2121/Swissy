@@ -1,5 +1,8 @@
 package com.arco2121.swissy.Utility;
 
+import static android.view.animation.AnimationUtils.loadInterpolator;
+
+import android.animation.TimeInterpolator;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -43,6 +46,23 @@ public class SharedObjects {
                         .start();
                 break;
         }
-        return consumeEvent;
+        return consumeEvent && window.performClick();
+    }
+    //OverLoad
+    public static boolean animateButton(View window, MotionEvent event, float littleX, float littleY, long duration, int interpolator, Runnable func, boolean consumeEvent) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                window.animate().scaleX(littleX).scaleY(littleY).setInterpolator(loadInterpolator(window.getContext(), interpolator)).setDuration(duration).start();
+                break;
+
+            case MotionEvent.ACTION_UP:
+
+            case MotionEvent.ACTION_CANCEL:
+                window.animate().scaleX(1f).scaleY(1f).setInterpolator(loadInterpolator(window.getContext(), interpolator)).setDuration(duration)
+                        .withEndAction(func)
+                        .start();
+                break;
+        }
+        return consumeEvent && window.performClick();
     }
 }
