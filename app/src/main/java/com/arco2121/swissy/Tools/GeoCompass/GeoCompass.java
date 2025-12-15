@@ -2,7 +2,12 @@ package com.arco2121.swissy.Tools.GeoCompass;
 
 import android.hardware.*;
 import android.location.Location;
+import android.os.Build;
+import android.view.HapticFeedbackConstants;
+import android.view.View;
+
 import com.arco2121.swissy.Tools.ToolStructure;
+import com.arco2121.swissy.Utility.VibrationMaker;
 
 public class GeoCompass implements ToolStructure {
     private GeoCompassListener listener;
@@ -26,11 +31,11 @@ public class GeoCompass implements ToolStructure {
     private boolean magnetReady = false;
     private float filteredAzimuth = 0f;
     private boolean aziReady = false;
-    public final float ALPHA = 0.04f;
-    private final boolean[] cardinals = { false, false, false, false };
+    public final float ALPHA = 0.03f;
     private int magneticAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
     private int accelAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
     private long lastAccuracyWarning = 0;
+    private Float lastTriggered = null;
 
     public GeoCompass(SensorManager sm, Location location) throws Exception {
         this.sm = sm;
@@ -290,32 +295,26 @@ public class GeoCompass implements ToolStructure {
     public boolean isCustomNorthActive() {
         return customNorth != null;
     }
-    public boolean isCardinal(float azimuth) {
-        if (azimuth >= 355 || azimuth < 5) {
-            cardinals[1] = true;
-            cardinals[2] = true;
-            cardinals[3] = true;
-            return !cardinals[0];
+    public void triggerHapticIfCardinal(float angle, View view) {
+        float[] cardinals = {0f, 90f, 180f, 270f};
+        float threshold = 3f;
+        float normalized = (angle % 360 + 360) % 360;
+
+        boolean inZone = false;
+
+        for (float point : cardinals) {
+            if (Math.abs(normalized - point) <= threshold) {
+                inZone = true;
+                if (lastTriggered == null || !lastTriggered.equals(point)) {
+                    VibrationMaker.vibrate(view, VibrationMaker.Vibration.High);
+                    lastTriggered = point;
+                }
+                break;
+            }
         }
-        else if(azimuth >= 85 && azimuth <= 95) {
-            cardinals[0] = true;
-            cardinals[2] = true;
-            cardinals[3] = true;
-            return !cardinals[1];
+        if (!inZone) {
+            lastTriggered = null;
         }
-        else if(azimuth >= 175 && azimuth <= 185) {
-            cardinals[0] = true;
-            cardinals[1] = true;
-            cardinals[3] = true;
-            return !cardinals[2];
-        }
-        else if(azimuth >= 265 && azimuth <= 275) {
-            cardinals[0] = true;
-            cardinals[2] = true;
-            cardinals[1] = true;
-            return !cardinals[3];
-        }
-        else return false;
     }
     public static String getDirectionRange(float azimuth) {
         if (azimuth >= 337.5 || azimuth < 22.5) return "N";

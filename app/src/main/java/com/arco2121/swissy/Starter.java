@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -13,6 +14,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.arco2121.swissy.Managers.LocationProvider;
+import com.arco2121.swissy.Managers.SettingsManager;
 import com.arco2121.swissy.Utility.LogPrinter;
 import com.arco2121.swissy.Managers.PermissionManager;
 import com.arco2121.swissy.Tools.Torch.Torch;
@@ -25,6 +27,7 @@ public class Starter extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SettingsManager.LoadPropreties(this);
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.starter);
@@ -34,12 +37,12 @@ public class Starter extends AppCompatActivity {
             return insets;
         });
         permissionManager = new PermissionManager(this);
-        FrameLayout logo = findViewById(R.id.logo);
-        logo.setScaleX(0.8f);
-        logo.setAlpha(0f);
-        logo.setScaleY(0.8f);
-        logo.animate().scaleX(1.1f).scaleY(1.1f).alpha(1f).setInterpolator(new OvershootInterpolator(2f)).setDuration(450).setStartDelay(550)
-                .withEndAction(this::redirect).start();
+        ImageView logo = findViewById(R.id.logo);
+        logo.setScaleX(0.75f);
+        logo.setScaleY(0.75f);
+        logo.animate().scaleX(1.15f).scaleY(1.15f).setInterpolator(new OvershootInterpolator(2f)).setDuration(350).setStartDelay(550)
+                .withEndAction(() -> logo.animate().scaleX(1f).scaleY(1f).setDuration(350)
+                        .withEndAction(this::redirect).start()).start();
     }
 
     //Catch the permissions results
@@ -57,9 +60,10 @@ public class Starter extends AppCompatActivity {
         permissionManager.requestPermissions(new PermissionManager.Callback() {
             @Override
             public void onGranted() {
-                FrameLayout logo = findViewById(R.id.logo);
+                ImageView logo = findViewById(R.id.logo);
                 logo.animate().alpha(0f).scaleX(0.8f).scaleY(0.8f).setDuration(450).withEndAction(() -> {
                     //Load the app
+                    logo.setAlpha(0f);
                     Intent intent = new Intent(Starter.this, Main.class);
                     startActivity(intent);
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

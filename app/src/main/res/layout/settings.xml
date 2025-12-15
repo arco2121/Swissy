@@ -10,8 +10,8 @@
     android:layout_marginTop="10dp">
 
     <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
         android:id="@+id/settingsBack"
         android:background="@drawable/button_mask"
         app:layout_constraintTop_toTopOf="parent"
@@ -37,13 +37,13 @@
     <LinearLayout
         android:layout_height="match_parent"
         android:layout_width="0dp"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="100dp"
         android:layout_marginBottom="30dp"
         android:clickable="false"
         android:descendantFocusability="afterDescendants"
         android:focusable="false"
         android:orientation="vertical"
-        app:layout_constraintWidth_percent="0.8"
+        app:layout_constraintWidth_percent="0.85"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -52,26 +52,29 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/status_back"
             android:gravity="center|fill"
-            android:layout_marginVertical="25dp"
+            android:layout_marginVertical="30dp"
             android:orientation="horizontal">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
+                android:textSize="15sp"
+                android:layout_marginStart="15dp"
                 android:textAlignment="textStart"
                 android:layout_weight="1"
-                android:text="Theme :"/>
+                android:text="Theme"/>
 
             <TextView
                 android:id="@+id/settingsTheme"
-                android:layout_width="wrap_content"
-                android:layout_weight="1"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
+                android:paddingVertical="15dp"
+                android:layout_weight="1"
+                android:textSize="12sp"
                 android:background="@drawable/button_mask"
-                android:paddingVertical="10dp"
-                android:textSize="15sp"
                 android:paddingHorizontal="15dp"
                 android:text="Mode"/>
 
@@ -81,7 +84,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center|fill"
-            android:layout_marginVertical="25dp"
+            android:background="@drawable/status_back"
+            android:layout_marginVertical="30dp"
             android:orientation="horizontal">
 
             <TextView
@@ -89,18 +93,20 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:layout_weight="1"
+                android:textSize="15sp"
+                android:layout_marginStart="15dp"
                 android:textAlignment="textStart"
-                android:text="Energy saver :"/>
+                android:text="Energy saver"/>
 
             <TextView
                 android:id="@+id/settingsSafe"
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
+                android:paddingHorizontal="15dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_mask_tool"
-                android:paddingVertical="10dp"
-                android:paddingHorizontal="15dp"
-                android:textSize="15sp"
+                android:paddingVertical="15dp"
+                android:textSize="12sp"
                 android:text="Mode"/>
 
         </LinearLayout>
@@ -109,27 +115,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center|fill"
-            android:layout_marginVertical="25dp"
+            android:layout_marginVertical="30dp"
             android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:layout_marginStart="15dp"
+                android:textAlignment="textStart"
+                android:textSize="15sp"
+                android:text="Permissions"/>
 
             <TextView
                 android:id="@+id/openSettings"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:textAlignment="textStart"
-                android:layout_weight="1"
-                android:text="Permissions :"/>
-
-            <TextView
-                android:id="@+id/settingsVibra"
-                android:layout_width="wrap_content"
-                android:layout_weight="1"
+                android:paddingHorizontal="55dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/status_back"
-                android:paddingVertical="10dp"
-                android:paddingHorizontal="15dp"
-                android:textSize="15sp"
+                android:paddingVertical="15dp"
+                android:textSize="12sp"
                 android:text="Open settings"/>
 
         </LinearLayout>
@@ -138,7 +144,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center|fill"
-            android:layout_marginVertical="25dp"
+            android:background="@drawable/status_back"
+            android:layout_marginVertical="30dp"
             android:orientation="horizontal">
 
             <TextView
@@ -146,17 +153,20 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:layout_weight="1"
+                android:textSize="15sp"
                 android:textAlignment="textStart"
-                android:text="Vibration :"/>
+                android:layout_marginStart="15dp"
+                android:text="Vibration"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
+                android:paddingHorizontal="15dp"
                 android:layout_weight="1"
+                android:id="@+id/settingsVibra"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_mask"
-                android:paddingVertical="10dp"
-                android:paddingHorizontal="15dp"
-                android:textSize="15sp"
+                android:paddingVertical="15dp"
+                android:textSize="12sp"
                 android:text="Mode"/>
 
         </LinearLayout>
@@ -169,8 +179,8 @@
             android:paddingVertical="15dp"
             android:layout_gravity="center"
             android:paddingHorizontal="20dp"
-            android:layout_marginVertical="30dp"
-            android:textSize="15sp"
+            android:layout_marginVertical="45dp"
+            android:textSize="12sp"
             android:text="View project on Github"/>
 
     </LinearLayout>
@@ -184,7 +194,8 @@
         android:focusable="false"
         android:orientation="vertical"
         app:layout_constraintWidth_percent="0.8"
-        android:text="Swissy v1.0"
+        android:textSize="15sp"
+        android:text="@string/app_version"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

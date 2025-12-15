@@ -5,40 +5,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <ImageView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:id="@+id/logo"
-        app:layout_constraintWidth_percent="0.4"
+        app:layout_constraintWidth_percent="0.45"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/icon_back"
-            android:scaleType="center"/>
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintWidth_percent="0.95"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:scaleType="fitCenter"
-                android:src="@drawable/tool" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </FrameLayout>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="17dp"
+        android:padding="12dp"
+        android:background="@drawable/icon_back"
+        android:src="@drawable/tool" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

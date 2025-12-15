@@ -6,6 +6,8 @@ import android.animation.TimeInterpolator;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.arco2121.swissy.Managers.SettingsManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,25 +46,27 @@ public class SharedObjects {
                 window.animate().scaleX(1f).scaleY(1f).setDuration(duration)
                         .withEndAction(func)
                         .start();
+                if(SettingsManager.getPropreties(window.getContext()).getBoolean("vibration", false)) VibrationMaker.vibrate(window, VibrationMaker.Vibration.Short);
                 break;
         }
-        return consumeEvent && window.performClick();
+        return consumeEvent;
     }
     //OverLoad
-    public static boolean animateButton(View window, MotionEvent event, float littleX, float littleY, long duration, int interpolator, Runnable func, boolean consumeEvent) {
+    public static boolean animateButton(View window, MotionEvent event, float littleX, float littleY, long duration, VibrationMaker.Vibration vibstyle, Runnable func, boolean consumeEvent) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                window.animate().scaleX(littleX).scaleY(littleY).setInterpolator(loadInterpolator(window.getContext(), interpolator)).setDuration(duration).start();
+                window.animate().scaleX(littleX).scaleY(littleY).setDuration(duration).start();
                 break;
 
             case MotionEvent.ACTION_UP:
 
             case MotionEvent.ACTION_CANCEL:
-                window.animate().scaleX(1f).scaleY(1f).setInterpolator(loadInterpolator(window.getContext(), interpolator)).setDuration(duration)
+                window.animate().scaleX(1f).scaleY(1f).setDuration(duration)
                         .withEndAction(func)
                         .start();
+                if(SettingsManager.getPropreties(window.getContext()).getBoolean("vibration", false)) VibrationMaker.vibrate(window, vibstyle);
                 break;
         }
-        return consumeEvent && window.performClick();
+        return consumeEvent;
     }
 }

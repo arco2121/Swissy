@@ -2,9 +2,12 @@ package com.arco2121.swissy;
 
 import static com.arco2121.swissy.Utility.SharedObjects.animateButton;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Browser;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -24,6 +27,7 @@ public class Settings extends AppCompatActivity {
     private SharedPreferences see;
     private SharedPreferences.Editor write;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,13 +45,17 @@ public class Settings extends AppCompatActivity {
         long duration = getResources().getInteger(R.integer.icon_duration);
         TextView tema = findViewById(R.id.settingsTheme);
         TextView permessi = findViewById(R.id.openSettings);
+        TextView openProject = findViewById(R.id.openLink);
         TextView energy = findViewById(R.id.settingsSafe);
         TextView vibration = findViewById(R.id.settingsVibra);
         ImageView back = findViewById(R.id.settingsBack);
-        back.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
-            overridePendingTransition(R.anim.pop_start, R.anim.pop_end);
-            finish();
-        }, true));
+        int themeV = see.getInt("theme", 0);
+        tema.setText(themeV == 0 ? "Auto" : themeV == 1 ? "Light" : "Dark");
+        boolean enV = see.getBoolean("energy_safer", false);
+        energy.setText(enV ? "On" : "Off");
+        boolean enVi = see.getBoolean("vibration", true);
+        vibration.setText(enVi ? "On" : "Off");
+        back.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, this::finish, true));
         tema.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
             int now = see.getInt("theme", 0);
             if(now + 1 < 3) now = now + 1; else now = 0;
@@ -73,7 +81,7 @@ public class Settings extends AppCompatActivity {
         energy.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
             boolean en = see.getBoolean("energy_safer", false);
             en = !en;
-            write.putBoolean("energy_safe", en);
+            write.putBoolean("energy_safer", en);
             write.apply();
             String mode = en ? "On" : "Off";
             energy.setText(mode);
@@ -86,6 +94,10 @@ public class Settings extends AppCompatActivity {
             String mode = en ? "On" : "Off";
             vibration.setText(mode);
         }, true));
+        openProject.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
+            String url = getString(R.string.projectLink);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        }, true));
     }
-
 }

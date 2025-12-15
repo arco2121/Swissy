@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
 }
+val appMajorVersion = "CutThrough"
+val appNumber = "1.0.0"
+val appVersion = appNumber + if (appMajorVersion != "") " ($appMajorVersion)" else ""
 
 android {
     namespace = "com.arco2121.swissy"
@@ -13,7 +16,8 @@ android {
         minSdk = 24
         targetSdk = 36
         versionCode = 1
-        versionName = "1.0"
+        versionName = appVersion
+        resValue("string", "app_version", appVersion)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

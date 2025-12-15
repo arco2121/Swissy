@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Swissy</string>
-    <integer name="scalePlus">110</integer>
+    <string name="projectLink">https://github.com/arco2121/Swissy</string>
+    <integer name="scalePlus">115</integer>
     <integer name="scaleMinus">90</integer>
     <integer name="icon_duration">100</integer>
     <integer name="icon_duration_long">200</integer>

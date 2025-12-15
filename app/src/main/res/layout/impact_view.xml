@@ -18,6 +18,9 @@
             android:layout_height="0dp"
             app:layout_constraintWidth_percent="1"
             android:src="@drawable/impact_grid"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintDimensionRatio="1:1"/>
 
 
@@ -28,14 +31,13 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:layout_margin="10dp"
         android:gravity="center">
 
         <TextView
             android:id="@+id/weight"
             android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="0dp"
+
+            android:layout_height="wrap_content"
             android:textSize="23sp"
             android:text="Weight"
             android:paddingHorizontal="20dp"
