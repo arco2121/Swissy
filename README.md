@@ -1,7 +1,7 @@
 # Swissy
 
 <p align="center">
-  <img src="app/src/main/res/drawable/too_back.png" width="250" height="250" alt="descrizione">
+  <img src="app/src/main/res/drawable/too_back.png" width="300" height="300" alt="descrizione">
 </p>
 
 ## Requirements
