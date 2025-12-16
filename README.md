@@ -6,7 +6,9 @@
 
 ## Requirements for Android installation
 <details>
-  <summary>Requireents</summary>
+  <summary>Requirements</summary>
   Android 7.0+
+</details>
+<details>
   Resonable screen sizes
 </details>
