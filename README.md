@@ -1,7 +1,7 @@
 # Swissy
 
 <p align="center">
-  <img src="app/src/main/res/mipmap-xxhdpi/icon_foreground.webp" width="300" height="300" alt="descrizione">
+  <img src="app/src/main/res/mipmap-xxhdpi/icon_foreground.webp" width="600" height="600" alt="descrizione">
 </p>
 
 ## Requirements
