@@ -134,7 +134,7 @@
                 android:layout_marginVertical="10dp"
                 android:textSize="12dp"
                 android:layout_height="wrap_content"
-                android:text="Brithness : ---"/>
+                android:text="Noise : ---"/>
 
             <TextView
                 android:layout_width="match_parent"
