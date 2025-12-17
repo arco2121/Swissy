@@ -51,7 +51,7 @@ public class Settings extends AppCompatActivity {
         ImageView back = findViewById(R.id.settingsBack);
         int themeV = see.getInt("theme", 0);
         tema.setText(themeV == 0 ? "Auto" : themeV == 1 ? "Light" : "Dark");
-        boolean enV = see.getBoolean("energy_safer", false);
+        boolean enV = see.getBoolean("energysafer", false);
         energy.setText(enV ? "On" : "Off");
         boolean enVi = see.getBoolean("vibration", true);
         vibration.setText(enVi ? "On" : "Off");
@@ -79,12 +79,23 @@ public class Settings extends AppCompatActivity {
             permissionManager.openSettings(this);
         }, true));
         energy.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
-            boolean en = see.getBoolean("energy_safer", false);
-            en = !en;
-            write.putBoolean("energy_safer", en);
+            boolean enDD = see.getBoolean("energysafer", false);
+            enDD = !enDD;
+            write.putBoolean("energysafer", enDD);
             write.apply();
-            String mode = en ? "On" : "Off";
+            String mode = enDD ? "On" : "Off";
             energy.setText(mode);
+            try {
+                Thread.sleep(200);
+                Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
+                if (intent != null) {
+                    intent.addFlags(
+                            Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    );
+                    startActivity(intent);
+                    Runtime.getRuntime().exit(0);
+                }
+            } catch (InterruptedException ignored) { }
         }, true));
         vibration.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
             boolean en = see.getBoolean("vibration", false);

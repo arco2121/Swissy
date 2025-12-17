@@ -1,5 +1,8 @@
 package com.arco2121.swissy.Tools.Livella;
 
+import static com.arco2121.swissy.Utility.SharedObjects.calibrateSensorsDelay;
+
+import android.content.Context;
 import android.hardware.*;
 import android.view.View;
 
@@ -23,7 +26,7 @@ public class Livella implements ToolStructure {
     private static final float RAD_TO_DEG = (float) (180.0 / Math.PI);
     private boolean isLevelTriggered = false;
 
-    public Livella(@NonNull SensorManager sm) throws Exception {
+    public Livella(@NonNull SensorManager sm, Context c) throws Exception {
         this.sensorManager = sm;
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         if(rotationSensor == null) throw new Exception("Livella not available");
@@ -35,12 +38,12 @@ public class Livella implements ToolStructure {
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {}
         };
-        startSensors();
+        startSensors(c);
     }
 
     @Override
-    public void startSensors() {
-        if(rotationSensor != null) sensorManager.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+    public void startSensors(Context c) {
+        if(rotationSensor != null) sensorManager.registerListener(rotationListener, rotationSensor, calibrateSensorsDelay(c, 1));
     }
 
     @Override

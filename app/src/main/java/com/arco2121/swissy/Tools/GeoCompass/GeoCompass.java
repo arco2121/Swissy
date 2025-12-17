@@ -1,5 +1,8 @@
 package com.arco2121.swissy.Tools.GeoCompass;
 
+import static com.arco2121.swissy.Utility.SharedObjects.calibrateSensorsDelay;
+
+import android.content.Context;
 import android.hardware.*;
 import android.location.Location;
 import android.os.Build;
@@ -31,13 +34,13 @@ public class GeoCompass implements ToolStructure {
     private boolean magnetReady = false;
     private float filteredAzimuth = 0f;
     private boolean aziReady = false;
-    public final float ALPHA = 0.03f;
+    public final float ALPHA = 0.035f;
     private int magneticAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
     private int accelAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
     private long lastAccuracyWarning = 0;
     private Float lastTriggered = null;
 
-    public GeoCompass(SensorManager sm, Location location) throws Exception {
+    public GeoCompass(SensorManager sm, Location location, Context c) throws Exception {
         this.sm = sm;
         rotationSensor = sm.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
         magneticSensor = sm.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -93,7 +96,7 @@ public class GeoCompass implements ToolStructure {
                 handleAccuracyChange(sensor, accuracy);
             }
         };
-        startSensors();
+        startSensors(c);
     }
 
     private void handleAccuracyChange(Sensor sensor, int accuracy) {
@@ -143,12 +146,12 @@ public class GeoCompass implements ToolStructure {
     }
 
     @Override
-    public void startSensors() {
+    public void startSensors(Context c) {
         if(rotationSensor != null) {
-            sm.registerListener(rotationListener, rotationSensor, SensorManager.SENSOR_DELAY_GAME);
+            sm.registerListener(rotationListener, rotationSensor, calibrateSensorsDelay(c, 1));
         }
-        sm.registerListener(magneticListener, magneticSensor, SensorManager.SENSOR_DELAY_GAME);
-        sm.registerListener(accelListener, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        sm.registerListener(magneticListener, magneticSensor, calibrateSensorsDelay(c, 1));
+        sm.registerListener(accelListener, accelerometer, calibrateSensorsDelay(c, 1));
     }
 
     @Override

@@ -15,6 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.arco2121.swissy.Managers.LocationProvider;
 import com.arco2121.swissy.Managers.SettingsManager;
+import com.arco2121.swissy.Tools.AmbientStatus.AmbientNoise;
 import com.arco2121.swissy.Utility.LogPrinter;
 import com.arco2121.swissy.Managers.PermissionManager;
 import com.arco2121.swissy.Tools.Torch.Torch;
@@ -57,6 +58,7 @@ public class Starter extends AppCompatActivity {
         //Permissions Needed
         permissionsNeeded.addAll(Arrays.asList(LocationProvider.permissionList));
         permissionsNeeded.addAll(Arrays.asList(Torch.permissionList));
+        permissionsNeeded.addAll(Arrays.asList(AmbientNoise.permissionList));
         permissionManager.requestPermissions(new PermissionManager.Callback() {
             @Override
             public void onGranted() {
@@ -85,6 +87,11 @@ public class Starter extends AppCompatActivity {
                     if (find != -1) {
                         if (!listPerm.toString().isEmpty()) listPerm.append(" and ");
                         listPerm.append("Camera");
+                    }
+                    find = java.util.Arrays.asList(AmbientNoise.permissionList).indexOf(permission);
+                    if (find != -1) {
+                        if (!listPerm.toString().isEmpty()) listPerm.append(" and ");
+                        listPerm.append("Microphone");
                     }
                 }
                 if (permissionManager.askAgain(Starter.this, denied)) {

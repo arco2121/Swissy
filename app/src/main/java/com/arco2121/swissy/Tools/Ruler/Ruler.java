@@ -1,8 +1,12 @@
 package com.arco2121.swissy.Tools.Ruler;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+
 import com.arco2121.swissy.Tools.ToolStructure;
 
 public class Ruler implements ToolStructure {
@@ -10,7 +14,19 @@ public class Ruler implements ToolStructure {
         MILLIMETER,
         CENTIMETER,
         INCH,
-        PIXEL
+        PIXEL;
+
+        @NonNull
+        @Override
+        public String toString() {
+            switch (this) {
+                case CENTIMETER: return "cm";
+                case MILLIMETER: return "mm";
+                case INCH: return "in";
+                case PIXEL: return "px";
+            }
+            return "";
+        }
     }
     public final float pxPerMm;
     private RulerListener listener;
@@ -23,7 +39,7 @@ public class Ruler implements ToolStructure {
     }
 
     public void setCalibrationFactor(float factor) {
-        calibrationFactor = factor;
+        calibrationFactor = Math.max(Math.min(factor, 10f), 0.5f);
     }
 
     private float mmToPx(float mm) {
@@ -35,7 +51,7 @@ public class Ruler implements ToolStructure {
     }
 
     @Override
-    public void startSensors() { }
+    public void startSensors(Context c) { }
 
     @Override
     public void stopSensors() { }

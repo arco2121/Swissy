@@ -18,7 +18,7 @@ public class LocationProvider {
     private final FusedLocationProviderClient provider;
     public Location location = null;
     private final LocationManager oldProvider;
-    public static final String[] permissionList = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION };
+    public static final String[] permissionList = { Manifest.permission.ACCESS_COARSE_LOCATION };
 
     public LocationProvider(FusedLocationProviderClient provider, LocationManager oldProvider) {
         this.provider = provider;

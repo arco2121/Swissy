@@ -34,12 +34,19 @@
         android:gravity="center">
 
         <TextView
-            android:id="@+id/weight"
             android:layout_width="match_parent"
-
             android:layout_height="wrap_content"
             android:textSize="23sp"
-            android:text="Weight"
+            android:text="Mesure"
+            android:paddingHorizontal="20dp"
+            android:gravity="center"/>
+        <TextView
+            android:id="@+id/weight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="23sp"
+            android:layout_marginVertical="25dp"
+            android:text="---"
             android:paddingHorizontal="20dp"
             android:gravity="center"/>
 

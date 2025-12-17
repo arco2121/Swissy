@@ -1,5 +1,8 @@
 package com.arco2121.swissy.Tools.Impact;
 
+import static com.arco2121.swissy.Utility.SharedObjects.calibrateSensorsDelay;
+
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -186,9 +189,9 @@ public class Impact implements ToolStructure {
 
 
     @Override
-    public void startSensors() {
+    public void startSensors(Context d) {
         Sensor sensorToUse;
-        int sensorDelay = SensorManager.SENSOR_DELAY_GAME;
+        int sensorDelay = calibrateSensorsDelay(d, 1);
 
         if (linearAccSensor != null) {
             sensorToUse = linearAccSensor;
@@ -210,9 +213,9 @@ public class Impact implements ToolStructure {
         this.listener = (ImpactListener) listener;
     }
 
-    public void start() {
+    public void start(Context c) {
         reset();
-        startSensors();
+        startSensors(c);
         currentState = State.CALIBRATING;
     }
 

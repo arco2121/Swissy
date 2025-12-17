@@ -63,6 +63,7 @@
                 android:gravity="center"
                 android:textSize="15sp"
                 android:layout_marginStart="15dp"
+                android:paddingVertical="20dp"
                 android:textAlignment="textStart"
                 android:layout_weight="1"
                 android:text="Theme"/>
@@ -70,9 +71,9 @@
             <TextView
                 android:id="@+id/settingsTheme"
                 android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                android:paddingVertical="15dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:gravity="center"
                 android:textSize="12sp"
                 android:background="@drawable/button_mask"
                 android:paddingHorizontal="15dp"
@@ -93,6 +94,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:layout_weight="1"
+                android:paddingVertical="20dp"
                 android:textSize="15sp"
                 android:layout_marginStart="15dp"
                 android:textAlignment="textStart"
@@ -103,9 +105,9 @@
                 android:layout_width="80dp"
                 android:paddingHorizontal="15dp"
                 android:layout_weight="1"
-                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_height="match_parent"
                 android:background="@drawable/button_mask_tool"
-                android:paddingVertical="15dp"
                 android:textSize="12sp"
                 android:text="Mode"/>
 
@@ -122,6 +124,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:gravity="center"
+                android:paddingVertical="20dp"
                 android:layout_weight="1"
                 android:layout_marginStart="15dp"
                 android:textAlignment="textStart"
@@ -132,9 +135,9 @@
                 android:id="@+id/openSettings"
                 android:layout_width="wrap_content"
                 android:paddingHorizontal="55dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
                 android:background="@drawable/status_back"
-                android:paddingVertical="15dp"
                 android:textSize="12sp"
                 android:text="Open settings"/>
 
@@ -154,6 +157,7 @@
                 android:gravity="center"
                 android:layout_weight="1"
                 android:textSize="15sp"
+                android:paddingVertical="20dp"
                 android:textAlignment="textStart"
                 android:layout_marginStart="15dp"
                 android:text="Vibration"/>
@@ -162,14 +166,29 @@
                 android:layout_width="80dp"
                 android:paddingHorizontal="15dp"
                 android:layout_weight="1"
+                android:gravity="center"
                 android:id="@+id/settingsVibra"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:background="@drawable/button_mask"
-                android:paddingVertical="15dp"
                 android:textSize="12sp"
                 android:text="Mode"/>
 
         </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintWidth_percent="0.8"
+        android:textSize="15sp"
+        android:layout_marginBottom="30dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:text="@string/app_version"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <TextView
             android:id="@+id/openLink"
@@ -179,26 +198,17 @@
             android:paddingVertical="15dp"
             android:layout_gravity="center"
             android:paddingHorizontal="20dp"
-            android:layout_marginVertical="45dp"
+            android:layout_marginVertical="35dp"
             android:textSize="12sp"
             android:text="View project on Github"/>
 
-    </LinearLayout>
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:textSize="15sp"
+            android:text="@string/app_version" />
 
-    <TextView
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_marginBottom="30dp"
-        android:clickable="false"
-        android:descendantFocusability="afterDescendants"
-        android:focusable="false"
-        android:orientation="vertical"
-        app:layout_constraintWidth_percent="0.8"
-        android:textSize="15sp"
-        android:text="@string/app_version"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

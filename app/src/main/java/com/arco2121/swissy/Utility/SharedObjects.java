@@ -3,6 +3,8 @@ package com.arco2121.swissy.Utility;
 import static android.view.animation.AnimationUtils.loadInterpolator;
 
 import android.animation.TimeInterpolator;
+import android.content.Context;
+import android.hardware.SensorManager;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -68,5 +70,10 @@ public class SharedObjects {
                 break;
         }
         return consumeEvent;
+    }
+
+    public static int calibrateSensorsDelay(Context ct, int prio) {
+        if(!SettingsManager.getPropreties(ct).getBoolean("energy_safer", false)) return prio == 1 ? SensorManager.SENSOR_DELAY_GAME :  SensorManager.SENSOR_DELAY_FASTEST;
+        else return SensorManager.SENSOR_DELAY_NORMAL;
     }
 }

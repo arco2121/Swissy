@@ -11,6 +11,9 @@
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent="0.35"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="5dp"
+        android:background="@drawable/ruler_back"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"/>
 
@@ -18,16 +21,17 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.65"
+        app:layout_constraintWidth_percent="0.5"
         android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:layout_weight="1"
             android:gravity="center">
 
             <TextView
@@ -41,18 +45,59 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:textSize="18sp"
+                android:id="@+id/rulerMi"
                 android:text="---"/>
 
         </LinearLayout>
 
-        <TextView
-            android:layout_width="150dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/button_mask"
-            android:paddingHorizontal="35dp"
-            android:paddingVertical="10dp"
-            android:layout_marginTop="50dp"
-            android:text="Mode"/>
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/rulerMode"
+                android:background="@drawable/button_mask"
+                android:paddingHorizontal="35dp"
+                android:paddingVertical="15sp"
+                android:textSize="13sp"
+                android:text="Mode"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_weight="1" >
+
+                <TextView
+                    android:id="@+id/rulerAdd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_mask"
+                    android:paddingHorizontal="25dp"
+                    android:paddingVertical="10dp"
+                    android:layout_margin="10dp"
+                    android:text="+"/>
+
+                <TextView
+                    android:id="@+id/rulerMin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/button_mask_tool"
+                    android:paddingHorizontal="25dp"
+                    android:layout_margin="10dp"
+                    android:paddingVertical="10dp"
+                    android:text="-"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 

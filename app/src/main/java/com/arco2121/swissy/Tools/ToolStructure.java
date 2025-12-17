@@ -1,7 +1,9 @@
 package com.arco2121.swissy.Tools;
 
+import android.content.Context;
+
 public interface ToolStructure {
-    void startSensors();
+    void startSensors(Context c);
     void stopSensors();
     void setListener(Object listener);
 }

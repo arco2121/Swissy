@@ -1,7 +1,10 @@
 package com.arco2121.swissy.Tools.Torch;
 
+import static com.arco2121.swissy.Utility.SharedObjects.calibrateSensorsDelay;
+
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -34,7 +37,7 @@ public class Torch implements ToolStructure {
     private final long POLLING_INTERVAL = 50;
     public static final String[] permissionList = {Manifest.permission.CAMERA};
 
-    public Torch(SensorManager sm, CameraManager cm) throws Exception {
+    public Torch(SensorManager sm, CameraManager cm, Context c) throws Exception {
         this.sm = sm;
         this.cm = cm;
         brightnessSensor = sm.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -45,7 +48,6 @@ public class Torch implements ToolStructure {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
                 onBrightness(sensorEvent);
-                if(listener != null) listener.onBrightness(sensorEvent.values[0]);
             }
 
             @Override
@@ -66,12 +68,12 @@ public class Torch implements ToolStructure {
             }
         };
 
-        startSensors();
+        startSensors(c);
     }
 
     @Override
-    public void startSensors() {
-        sm.registerListener(brightnessListener, brightnessSensor, SensorManager.SENSOR_DELAY_FASTEST);
+    public void startSensors(Context c) {
+        sm.registerListener(brightnessListener, brightnessSensor, calibrateSensorsDelay(c, 0));
         manageTorch = true;
         brightnessLux = -1f;
         isTorchCurrentlyOn = false;

@@ -28,9 +28,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.transition.TransitionManager;
 
 import com.arco2121.swissy.Managers.*;
+import com.arco2121.swissy.Tools.AmbientStatus.AmbientNoise;
 import com.arco2121.swissy.Tools.AmbientStatus.AmbientStatus;
 import com.arco2121.swissy.Tools.AmbientStatus.AmbientStatusListener;
 import com.arco2121.swissy.Tools.GeoCompass.*;
@@ -44,12 +44,16 @@ import com.arco2121.swissy.Utility.SwipeDetect;
 import com.arco2121.swissy.Utility.VibrationMaker;
 import com.google.android.gms.location.*;
 
-public class Main extends AppCompatActivity implements GeoCompassListener, TorchListener, LivellaListener, ImpactListener, AmbientStatusListener {
+import java.util.Locale;
+import java.util.Objects;
+
+public class Main extends AppCompatActivity implements GeoCompassListener, TorchListener, LivellaListener, ImpactListener, AmbientStatusListener, RulerListener {
     private LocationProvider locationManager;
     private SensorManager sensors;
     private CameraManager camera;
     private GeoCompass compass = null;
     private AmbientStatus ambientStatus = null;
+    private AmbientNoise ambientNoice = null;
     private Livella livella = null;
     private Torch torch = null;
     private Impact impact = null;
@@ -62,6 +66,9 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private float lastBrightnessSet = -1f;
     private boolean blockForCalibration = false;
     private ConstraintSet initialSet;
+    private RulerView righelloView;
+    private int indexUnit = 0;
+    private int prec = 1;
 
     //App
     @SuppressLint("ClickableViewAccessibility")
@@ -82,17 +89,19 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         PermissionManager permissionManager = new PermissionManager(this);
         locationManager = new LocationProvider(LocationServices.getFusedLocationProviderClient(Main.this), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
         locationManager.getLocation(permissionManager, locationRequested -> {
-            try { ambientStatus = (AmbientStatus) SharedObjects.addObj(appName , new AmbientStatus(sensors),  new Object[]{ R.drawable.status, R.layout.status_view }); ambientStatus.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
-            try { torch = (Torch) SharedObjects.addObj("Torch" , new Torch(sensors, camera),  new Object[]{ R.drawable.torch, R.layout.torch_view }); torch.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
-            try { compass = (GeoCompass) SharedObjects.addObj("Compass", new GeoCompass(sensors, locationRequested), new Object[]{ R.drawable.compass, R.layout.compass_view }); compass.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
-            try { livella = (Livella) SharedObjects.addObj("Livella" , new Livella(sensors),  new Object[]{ R.drawable.livella, R.layout.livella_view }); livella.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { ambientStatus = (AmbientStatus) SharedObjects.addObj(appName , new AmbientStatus(sensors, this),  new Object[]{ R.drawable.status, R.layout.status_view }); ambientStatus.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { torch = (Torch) SharedObjects.addObj("Torch" , new Torch(sensors, camera, this),  new Object[]{ R.drawable.torch, R.layout.torch_view }); torch.setListener(this); } catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { compass = (GeoCompass) SharedObjects.addObj("Compass", new GeoCompass(sensors, locationRequested, this), new Object[]{ R.drawable.compass, R.layout.compass_view }); compass.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { livella = (Livella) SharedObjects.addObj("Livella" , new Livella(sensors, this),  new Object[]{ R.drawable.livella, R.layout.livella_view }); livella.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { impact = (Impact) SharedObjects.addObj("Impact", new Impact(sensors), new Object[]{ R.drawable.impact, R.layout.impact_view}); impact.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { ruler = (Ruler) SharedObjects.addObj("Ruler", new Ruler(this), new Object[]{ R.drawable.ruler, R.layout.ruler_view }); ruler.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { ambientNoice = new AmbientNoise(this); ambientNoice.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             //UI
             ConstraintLayout mai = findViewById(R.id.main);
             ImageButton settings = findViewById(R.id.settingsBt);
             ImageButton currentButton = findViewById(R.id.currentstatus);
             TextView title = findViewById(R.id.currentstatuslabel);
+            ImageButton reloadIn = findViewById(R.id.reloadInfo);
             FrameLayout currentTool = findViewById(R.id.currentTool);
             float scale = (float) getResources().getInteger(R.integer.scaleMinus) / 100;
             long duration = getResources().getInteger(R.integer.icon_duration);
@@ -136,6 +145,20 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                 Intent intent = new Intent(Main.this, Settings.class);
                 startActivity(intent);
             }, true));
+            reloadIn.setAlpha(0f);
+            reloadIn.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
+               try {
+                   TextView alti = findViewById(R.id.status_alti);
+                   TextView posi = findViewById(R.id.status_pos);
+                   locationManager.getLocation(permissionManager, locationRequestedUp -> {
+                       compass.updateLocation(locationRequestedUp);
+                       try {
+                           posi.setText(String.format("LAT : %.2f   LON : %.2f", locationManager.location.getLatitude(), locationManager.location.getLongitude()));
+                           alti.setText(String.format("Altitude : %.2f m", locationManager.location.getAltitude()));
+                       } catch (Exception ignored) {}
+                   });
+               } catch (Exception ignored) {}
+            }, true));
             currentButton.setOnTouchListener((v, event) -> {
                 currentToolSelect.detector.onTouchEvent(event);
                 return animateButton(v, event, scale_long, scale_long_log, duration_long, VibrationMaker.Vibration.Long, () -> { },false);
@@ -157,15 +180,27 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         if(impact != null) {
             impact.reset();
         }
+        if(ambientStatus != null) {
+            ambientStatus.stopSensors();
+        }
+        if(ambientNoice != null) {
+            ambientNoice.stopSensors();
+        }
     }
     @Override
     protected void onResume() {
         super.onResume();
-        if (compass != null) compass.startSensors();
-        if (livella != null) livella.startSensors();
-        if (torch != null) torch.startSensors();
+        if (compass != null) compass.startSensors(this);
+        if (livella != null) livella.startSensors(this);
+        if (torch != null) torch.startSensors(this);
         if(impact != null) {
             impact.reset();
+        }
+        if(ambientStatus != null) {
+            ambientStatus.startSensors(this);
+        }
+        if(ambientNoice != null) {
+            ambientNoice.startSensors(this);
         }
     }
 
@@ -190,6 +225,11 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         TextView alti = toolView.findViewById(R.id.status_alti);
         TextView posi = toolView.findViewById(R.id.status_pos);
         ConstraintLayout righello = toolView.findViewById(R.id.ruler);
+        TextView changeMode = findViewById(R.id.rulerMode);
+        ImageButton reloadIn = findViewById(R.id.reloadInfo);
+        Ruler.RulerUnit[] units = {Ruler.RulerUnit.CENTIMETER, Ruler.RulerUnit.MILLIMETER, Ruler.RulerUnit.INCH, Ruler.RulerUnit.PIXEL};
+        ruler.setCalibrationFactor(1f);
+        reloadIn.setAlpha(0f);
         if(statusBox != null) {
             statusBox.setOnTouchListener((view, event) -> animateButton(view, event, scale, scale, duration, () -> {}, true));
             statusBox1.setOnTouchListener((view, event) -> animateButton(view, event, scale, scale, duration, () -> {}, true));
@@ -260,18 +300,19 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             }, true));
         }
         if(doMesure != null) {
-            weight.setText("Impact : ---");
+            weight.setText("---");
             doReset.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
                 impact.reset();
-                weight.setText("Impact : ---");
+                weight.setText("---");
             }, true));
             doMesure.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
-                impact.start();
-                weight.setText("Impact : ---");
+                impact.start(Main.this);
+                weight.setText("---");
             }, true));
         }
         if(posi != null) {
-            posi.setText(String.format("LAT %.2f  LON %.2f", locationManager.location.getLatitude(), locationManager.location.getLongitude()));
+            reloadIn.setAlpha(1f);
+            posi.setText(String.format("LAT : %.2f   LON : %.2f", locationManager.location.getLatitude(), locationManager.location.getLongitude()));
             alti.setText(String.format("Altitude : %.2f m", locationManager.location.getAltitude()));
         }
         if(righello != null) {
@@ -281,10 +322,11 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             set.constrainWidth(R.id.currentTool, ConstraintSet.MATCH_CONSTRAINT);
             set.constrainPercentWidth(R.id.currentTool, 0.9f);
             set.applyTo(root);
+            righello.removeAllViews();
             righello.post(() -> {
                 int heightPx = righello.getHeight();
                 float lengthMm = heightPx / (ruler.pxPerMm * ruler.calibrationFactor);
-                RulerView righelloView = (RulerView) ruler.createRulerView(this, lengthMm, Ruler.RulerUnit.CENTIMETER);
+                righelloView = (RulerView) ruler.createRulerView(this, lengthMm, units[indexUnit]);
                 ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
                         ConstraintLayout.LayoutParams.WRAP_CONTENT,
                         ConstraintLayout.LayoutParams.MATCH_PARENT);
@@ -293,7 +335,77 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                 params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
                 righelloView.setLayoutParams(params);
                 righello.addView(righelloView);
+                changeMode.setText(units[indexUnit].toString().toUpperCase(Locale.ROOT));
             });
+            float scale_long = (float) getResources().getInteger(R.integer.scaleMinus) / 100;
+            long duration_long = getResources().getInteger(R.integer.icon_duration);
+            TextView isura = findViewById(R.id.rulerMi);
+            TextView maxC = findViewById(R.id.rulerAdd);
+            TextView minC = findViewById(R.id.rulerMin);
+            isura.setOnClickListener(v -> {
+                String before = (String) isura.getText();
+                if(Objects.equals(before, "---")) return;
+                if(prec + 1 < 9) prec += 1; else prec = 1;
+                Float guess = new Float(before.split(units[indexUnit].toString())[0]);
+                isura.setText(String.format("%." + prec + "f %s", guess, righelloView.unit));
+            });
+            changeMode.setOnTouchListener((v, event) -> animateButton(v, event, scale_long, scale_long, duration_long, VibrationMaker.Vibration.Long, () -> {
+                indexUnit = indexUnit + 1 < units.length ? indexUnit + 1 : 0;
+                righello.removeAllViews();
+                isura.setText("---");
+                righello.post(() -> {
+                    int heightPx = righello.getHeight();
+                    float lengthMm = heightPx / (ruler.pxPerMm * ruler.calibrationFactor);
+                    righelloView = (RulerView) ruler.createRulerView(this, lengthMm, units[indexUnit]);
+                    ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
+                            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                            ConstraintLayout.LayoutParams.MATCH_PARENT);
+                    params.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+                    params.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+                    params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+                    righelloView.setLayoutParams(params);
+                    righello.addView(righelloView);
+                    changeMode.setText(units[indexUnit].toString().toUpperCase(Locale.ROOT));
+                });
+            },true));
+            maxC.setOnTouchListener((v, event) -> animateButton(v, event, scale_long, scale_long, duration_long, VibrationMaker.Vibration.Long, () -> {
+                ruler.setCalibrationFactor(ruler.calibrationFactor + 0.1f);
+                righello.removeAllViews();
+                isura.setText("---");
+                righello.post(() -> {
+                    int heightPx = righello.getHeight();
+                    float lengthMm = heightPx / (ruler.pxPerMm * ruler.calibrationFactor);
+                    righelloView = (RulerView) ruler.createRulerView(this, lengthMm, units[indexUnit]);
+                    ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
+                            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                            ConstraintLayout.LayoutParams.MATCH_PARENT);
+                    params.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+                    params.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+                    params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+                    righelloView.setLayoutParams(params);
+                    righello.addView(righelloView);
+                    changeMode.setText(units[indexUnit].toString().toUpperCase(Locale.ROOT));
+                });
+            },true));
+            minC.setOnTouchListener((v, event) -> animateButton(v, event, scale_long, scale_long, duration_long, VibrationMaker.Vibration.Long, () -> {
+                ruler.setCalibrationFactor(ruler.calibrationFactor - 0.05f);
+                righello.removeAllViews();
+                isura.setText("---");
+                righello.post(() -> {
+                    int heightPx = righello.getHeight();
+                    float lengthMm = heightPx / (ruler.pxPerMm * ruler.calibrationFactor);
+                    righelloView = (RulerView) ruler.createRulerView(this, lengthMm, units[indexUnit]);
+                    ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
+                            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                            ConstraintLayout.LayoutParams.MATCH_PARENT);
+                    params.startToStart = ConstraintLayout.LayoutParams.PARENT_ID;
+                    params.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+                    params.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+                    righelloView.setLayoutParams(params);
+                    righello.addView(righelloView);
+                    changeMode.setText(units[indexUnit].toString().toUpperCase(Locale.ROOT));
+                });
+            },true));
         }
     }
 
@@ -444,14 +556,6 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         } catch(Exception ignored) {}
     }
 
-    @Override
-    public void onBrightness(float bri) {
-        try {
-            TextView result = findViewById(R.id.status_bri);
-            result.setText(String.format("Brightness : %.2f lux", bri));
-        } catch (Exception ignored) { }
-    }
-
     //Livella
     @Override
     public void onLevelChange(float rotation, float pitch, float roll) {
@@ -482,7 +586,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     public void onCalibrated() {
         try {
             TextView result = findViewById(R.id.weight);
-            result.setText("Impact : Ready");
+            result.setText("Ready");
         } catch (Exception ignore) {}
     }
 
@@ -490,7 +594,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     public void onCalibrationProgress(float value) {
         try {
             TextView result = findViewById(R.id.weight);
-            result.setText(String.format("Impact : - %.0f -", value));
+            result.setText(String.format("- %.0f -", value));
         } catch (Exception ignore) {}
     }
 
@@ -498,7 +602,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     public void onImpact(float range, float filt, float raw) {
         try{
             TextView result = findViewById(R.id.weight);
-            result.setText(String.format("Impact : %.1f m/s² (%.0f)", filt, range));
+            result.setText(String.format("%.1f m/s² (%.0f)", filt, range));
             impact.reset();
             if(SettingsManager.getPropreties(this).getBoolean("vibration", false)) VibrationMaker.vibrate(result, VibrationMaker.Vibration.ReverseHigh);
         } catch (Exception ignore) {}
@@ -526,6 +630,32 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         try {
             TextView result = findViewById(R.id.status_magne);
             result.setText(String.format("Pression : %.2f bar", pressure));
+        } catch (Exception ignored) { }
+    }
+
+    @Override
+    public void onNoise(double decibels) {
+        try {
+            TextView result = findViewById(R.id.status_bri);
+            result.setText(String.format("Noise : %.2f db", decibels));
+        } catch (Exception ignored) { }
+    }
+
+    //Ruler
+    @Override
+    public void onMeasure(float mm, float cm, float inch, float px) {
+        try {
+            TextView isura = findViewById(R.id.rulerMi);
+            float mesure;
+            switch (righelloView.unit) {
+                case MILLIMETER: mesure = mm; break;
+                case INCH: mesure = inch; break;
+                case PIXEL: mesure = px; break;
+                default: mesure = cm;
+            }
+            String out = String.format("%." + prec + "f %s", mesure, righelloView.unit);
+            if(SettingsManager.getPropreties(this).getBoolean("vibration", false)) VibrationMaker.vibrate(isura, VibrationMaker.Vibration.Medium);
+            isura.setText(out);
         } catch (Exception ignored) { }
     }
 }

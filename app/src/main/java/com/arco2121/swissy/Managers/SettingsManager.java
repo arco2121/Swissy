@@ -35,8 +35,8 @@ public class SettingsManager {
             editorSettings.putInt("theme", 0);
             editorSettings.apply();
         }
-        if(!temp.contains("energy_safer")) {
-            editorSettings.putBoolean("energy_safer", false);
+        if(!temp.contains("energysafer")) {
+            editorSettings.putBoolean("energysafer", false);
             editorSettings.apply();
         }
         if(!temp.contains("vibration")) {

@@ -1,4 +1,7 @@
 package com.arco2121.swissy.Tools.AmbientStatus;
+import static com.arco2121.swissy.Utility.SharedObjects.calibrateSensorsDelay;
+
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -16,7 +19,7 @@ public class AmbientStatus implements ToolStructure {
     private final SensorEventListener tempSensorListen;
     private AmbientStatusListener listener;
 
-    public AmbientStatus(SensorManager sm) {
+    public AmbientStatus(SensorManager sm, Context c) {
         this.sm = sm;
         umiditySensor = sm.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
         pressureSensor = sm.getDefaultSensor(Sensor.TYPE_PRESSURE);
@@ -48,14 +51,14 @@ public class AmbientStatus implements ToolStructure {
                 if(listener != null) listener.onPressure(Math.max(0f, sensorEvent.values[0]));
             }
         };
-        startSensors();
+        startSensors(c);
     }
 
     @Override
-    public void startSensors() {
-        if(pressureSensor != null) sm.registerListener(pressureSensorListen, pressureSensor, SensorManager.SENSOR_DELAY_GAME);
-        if(tempSensor != null) sm.registerListener(tempSensorListen, tempSensor, SensorManager.SENSOR_DELAY_GAME);
-        if(umiditySensor != null) sm.registerListener(umiditySensorListen, umiditySensor, SensorManager.SENSOR_DELAY_GAME);
+    public void startSensors(Context c) {
+        if(pressureSensor != null) sm.registerListener(pressureSensorListen, pressureSensor, calibrateSensorsDelay(c, 1));
+        if(tempSensor != null) sm.registerListener(tempSensorListen, tempSensor, calibrateSensorsDelay(c, 1));
+        if(umiditySensor != null) sm.registerListener(umiditySensorListen, umiditySensor, calibrateSensorsDelay(c, 1));
     }
     @Override
     public void stopSensors() {
