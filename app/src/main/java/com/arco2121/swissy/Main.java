@@ -71,7 +71,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private int prec = 1;
 
     //App
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "MissingPermission"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

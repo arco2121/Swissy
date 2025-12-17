@@ -1,11 +1,12 @@
 package com.arco2121.swissy.Managers;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.location.Location;
-import android.os.Bundle;
 import android.os.Looper;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresPermission;
 
 import com.google.android.gms.location.*;
 
@@ -18,13 +19,14 @@ public class LocationProvider {
     private final FusedLocationProviderClient provider;
     public Location location = null;
     private final LocationManager oldProvider;
-    public static final String[] permissionList = { Manifest.permission.ACCESS_COARSE_LOCATION };
+    public static final String[] permissionList = { Manifest.permission.ACCESS_COARSE_LOCATION,  Manifest.permission.ACCESS_FINE_LOCATION };
 
     public LocationProvider(FusedLocationProviderClient provider, LocationManager oldProvider) {
         this.provider = provider;
         this.oldProvider = oldProvider;
     }
 
+    @SuppressLint("MissingPermission")
     public void getLocation(PermissionManager pm, Callback callback) {
         if (!pm.hasPermissions(permissionList)) {
             callback.onLocationReady(null);
@@ -42,6 +44,7 @@ public class LocationProvider {
         });
     }
 
+    @SuppressLint("MissingPermission")
     private void requestNewLocation(Callback callback) {
         LocationRequest req = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500).setMaxUpdates(1).build();
         provider.requestLocationUpdates(req, new LocationCallback() {
@@ -59,6 +62,7 @@ public class LocationProvider {
                 Looper.getMainLooper()
         );
     }
+    @SuppressLint("MissingPermission")
     private void requestFallbackLocation(Callback callback) {
         try {
             String providerToUse = null;

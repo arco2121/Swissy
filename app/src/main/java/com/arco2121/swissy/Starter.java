@@ -87,6 +87,7 @@ public class Starter extends AppCompatActivity {
                     if (find != -1) {
                         if (!listPerm.toString().isEmpty()) listPerm.append(" and ");
                         listPerm.append("Camera");
+                        continue;
                     }
                     find = java.util.Arrays.asList(AmbientNoise.permissionList).indexOf(permission);
                     if (find != -1) {
