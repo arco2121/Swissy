@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
 }
 val appMajorVersion = "CutThrough"
-val appNumber = "1.0.0"
+val appNumber = "1.0.1"
 val appVersion = appNumber + if (appMajorVersion != "") " ($appMajorVersion)" else ""
 
 android {

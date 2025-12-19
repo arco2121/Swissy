@@ -69,6 +69,8 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private RulerView righelloView;
     private int indexUnit = 0;
     private int prec = 1;
+    private float oldpitch = 0f;
+    private float oldroll = 0f;
 
     //App
     @SuppressLint({"ClickableViewAccessibility", "MissingPermission"})
@@ -146,19 +148,24 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                 startActivity(intent);
             }, true));
             reloadIn.setAlpha(0f);
-            reloadIn.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
-               try {
-                   TextView alti = findViewById(R.id.status_alti);
-                   TextView posi = findViewById(R.id.status_pos);
-                   locationManager.getLocation(permissionManager, locationRequestedUp -> {
-                       compass.updateLocation(locationRequestedUp);
-                       try {
-                           posi.setText(String.format("LAT : %.2f   LON : %.2f", locationManager.location.getLatitude(), locationManager.location.getLongitude()));
-                           alti.setText(String.format("Altitude : %.2f m", locationManager.location.getAltitude()));
-                       } catch (Exception ignored) {}
-                   });
-               } catch (Exception ignored) {}
-            }, true));
+            reloadIn.setOnTouchListener((v, event) -> {
+                if(reloadIn.getAlpha() > 0f) {
+                    return animateButton(v, event, scale, scale, duration, () -> {
+                        try {
+                            TextView alti = findViewById(R.id.status_alti);
+                            TextView posi = findViewById(R.id.status_pos);
+                            locationManager.getLocation(permissionManager, locationRequestedUp -> {
+                                compass.updateLocation(locationRequestedUp);
+                                try {
+                                    posi.setText(String.format("LAT : %.2f   LON : %.2f", locationManager.location.getLatitude(), locationManager.location.getLongitude()));
+                                    alti.setText(String.format("Altitude : %.2f m", locationManager.location.getAltitude()));
+                                } catch (Exception ignored) {}
+                            });
+                        } catch (Exception ignored) {}
+                    }, true);
+                }
+                return true;
+            });
             currentButton.setOnTouchListener((v, event) -> {
                 currentToolSelect.detector.onTouchEvent(event);
                 return animateButton(v, event, scale_long, scale_long_log, duration_long, VibrationMaker.Vibration.Long, () -> { },false);
@@ -571,13 +578,15 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             float newY = (-pitch * sensitivity);
             View container = findViewById(R.id.livella_cont);
             ImageView ballView = findViewById(R.id.livella_point);
-            if(SettingsManager.getPropreties(this).getBoolean("vibration", false)) VibrationMaker.vibrate(container, VibrationMaker.Vibration.Low);
+            if((Math.abs(roll - oldroll) > 0.5 || Math.abs(pitch - oldpitch) > 0.5) && SettingsManager.getPropreties(this).getBoolean("vibration", false)) VibrationMaker.vibrate(container, VibrationMaker.Vibration.Low);
             if(SettingsManager.getPropreties(this).getBoolean("vibration", false)) livella.triggerHapticIfLevel(pitch, roll, container);
             float maxMovement = (container.getWidth() - ballView.getWidth()) / 2f;
             newX = Math.max(-maxMovement, Math.min(newX, maxMovement));
             newY = Math.max(-maxMovement, Math.min(newY, maxMovement));
             ballView.setTranslationX(newX);
             ballView.setTranslationY(newY);
+            oldpitch = pitch;
+            oldroll = roll;
         } catch (Exception ignored) {}
     }
 

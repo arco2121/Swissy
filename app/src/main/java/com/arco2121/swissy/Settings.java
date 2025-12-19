@@ -86,7 +86,7 @@ public class Settings extends AppCompatActivity {
             String mode = enDD ? "On" : "Off";
             energy.setText(mode);
             try {
-                Thread.sleep(200);
+                Thread.sleep(100);
                 Intent intent = getPackageManager().getLaunchIntentForPackage(getPackageName());
                 if (intent != null) {
                     intent.addFlags(

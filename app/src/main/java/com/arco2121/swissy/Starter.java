@@ -76,23 +76,27 @@ public class Starter extends AppCompatActivity {
             @Override
             public void onDenied(String[] denied) {
                 StringBuilder listPerm = new StringBuilder();
+                boolean[] checked = { false, false, false };
                 for (String permission : denied) {
                     int find = java.util.Arrays.asList(LocationProvider.permissionList).indexOf(permission);
-                    if (find != -1) {
+                    if (find != -1 && !checked[0]) {
                         if (!listPerm.toString().isEmpty()) listPerm.append(" and ");
                         listPerm.append("Location");
+                        checked[0] = true;
                         continue;
                     }
                     find = java.util.Arrays.asList(Torch.permissionList).indexOf(permission);
-                    if (find != -1) {
+                    if (find != -1 && !checked[1]) {
                         if (!listPerm.toString().isEmpty()) listPerm.append(" and ");
                         listPerm.append("Camera");
+                        checked[1] = true;
                         continue;
                     }
                     find = java.util.Arrays.asList(AmbientNoise.permissionList).indexOf(permission);
-                    if (find != -1) {
+                    if (find != -1 && !checked[2]) {
                         if (!listPerm.toString().isEmpty()) listPerm.append(" and ");
                         listPerm.append("Microphone");
+                        checked[2] = true;
                     }
                 }
                 if (permissionManager.askAgain(Starter.this, denied)) {

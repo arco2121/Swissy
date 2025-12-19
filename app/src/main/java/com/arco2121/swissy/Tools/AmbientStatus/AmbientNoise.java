@@ -1,41 +1,54 @@
 package com.arco2121.swissy.Tools.AmbientStatus;
 
-import com.arco2121.swissy.Managers.SettingsManager;
-import com.arco2121.swissy.Tools.ToolStructure;
-
 import android.Manifest;
 import android.content.Context;
-import android.hardware.SensorManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
-import android.os.Looper;
 import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.RequiresPermission;
 
+import com.arco2121.swissy.Managers.SettingsManager;
+import com.arco2121.swissy.Tools.ToolStructure;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AmbientNoise implements ToolStructure {
+
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
+
     private AudioRecord audioRecord;
     private int bufferSize;
-    private boolean isRecording = false;
-    private Thread recordingThread;
+
+    private final AtomicBoolean isRecording = new AtomicBoolean(false);
+    private ExecutorService executor;
+
     private AmbientStatusListener listener;
-    public static final String[] permissionList = { Manifest.permission.RECORD_AUDIO };
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    public static final String[] permissionList = {
+            Manifest.permission.RECORD_AUDIO
+    };
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     public AmbientNoise(Context c) throws Exception {
+
         bufferSize = AudioRecord.getMinBufferSize(
                 SAMPLE_RATE,
                 CHANNEL_CONFIG,
                 AUDIO_FORMAT
         );
-        if (bufferSize == AudioRecord.ERROR || bufferSize == AudioRecord.ERROR_BAD_VALUE) {
+
+        if (bufferSize <= 0) {
             throw new Exception("Cannot create Noise Listener");
         }
+
         audioRecord = new AudioRecord(
                 MediaRecorder.AudioSource.MIC,
                 SAMPLE_RATE,
@@ -43,6 +56,7 @@ public class AmbientNoise implements ToolStructure {
                 AUDIO_FORMAT,
                 bufferSize
         );
+
         startSensors(c);
     }
 
@@ -51,45 +65,73 @@ public class AmbientNoise implements ToolStructure {
         this.listener = (AmbientStatusListener) listener;
     }
 
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     @Override
     public void startSensors(Context c) {
-        if(SettingsManager.getPropreties(c).getBoolean("energysafer", false))
+        if (SettingsManager.getPropreties(c).getBoolean("energysafer", false)) {
             return;
-        isRecording = true;
+        }
+
+        if (isRecording.get()) return;
+
+        isRecording.set(true);
+        if(audioRecord == null) {
+            audioRecord = new AudioRecord(
+                    MediaRecorder.AudioSource.MIC,
+                    SAMPLE_RATE,
+                    CHANNEL_CONFIG,
+                    AUDIO_FORMAT,
+                    bufferSize
+            );
+        }
         audioRecord.startRecording();
-        recordingThread = new Thread(this::processAudio);
-        recordingThread.start();
+
+        executor = Executors.newSingleThreadExecutor();
+        executor.execute(this::processAudio);
     }
 
     @Override
     public void stopSensors() {
-        isRecording = false;
-        if (audioRecord != null) {
-            if (audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
-                audioRecord.stop();
-            }
+        isRecording.set(false);
+
+        if (audioRecord != null &&
+                audioRecord.getState() == AudioRecord.STATE_INITIALIZED) {
+            audioRecord.stop();
         }
-        if (recordingThread != null) {
-            try {
-                recordingThread.join();
-            } catch (InterruptedException ignored) {}
+
+        if (executor != null) {
+            executor.shutdownNow();
+            executor = null;
+        }
+
+        if (audioRecord != null) {
+            audioRecord.release();
+            audioRecord = null;
         }
     }
 
     private void processAudio() {
-        short[] buffer = new short[bufferSize];
+        short[] buffer = new short[bufferSize / 2];
 
-        while (isRecording) {
-            int readSize = audioRecord.read(buffer, 0, bufferSize);
+        while (isRecording.get() &&
+                !Thread.currentThread().isInterrupted()) {
 
-            if (readSize > 0) {
-                double sum = 0;
-                for (int i = 0; i < readSize; i++) {
-                    sum += buffer[i] * buffer[i];
-                }
-                double rms = Math.sqrt(sum / readSize);
-                double decibels = 20 * Math.log10(rms + 1);
-                if(listener != null) listener.onNoise(decibels);
+            int read = audioRecord.read(buffer, 0, buffer.length);
+
+            if (read <= 0) continue;
+
+            double sum = 0;
+            for (int i = 0; i < read; i++) {
+                sum += buffer[i] * buffer[i];
+            }
+
+            double rms = Math.sqrt(sum / read);
+            double decibels = 20 * Math.log10(rms + 1);
+
+            if (listener != null) {
+                mainHandler.post(() ->
+                        listener.onNoise(decibels)
+                );
             }
         }
     }
