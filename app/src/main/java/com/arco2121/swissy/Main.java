@@ -2,7 +2,10 @@ package com.arco2121.swissy;
 
 import static com.arco2121.swissy.Utility.SharedObjects.animateButton;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -21,7 +24,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.view.PreviewView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
@@ -36,6 +41,8 @@ import com.arco2121.swissy.Tools.AmbientStatus.AmbientStatusListener;
 import com.arco2121.swissy.Tools.GeoCompass.*;
 import com.arco2121.swissy.Tools.Livella.*;
 import com.arco2121.swissy.Tools.Ruler.*;
+import com.arco2121.swissy.Tools.ScannerEye.ScannerEye;
+import com.arco2121.swissy.Tools.ScannerEye.ScannerEyeListener;
 import com.arco2121.swissy.Tools.Torch.*;
 import com.arco2121.swissy.Tools.Impact.*;
 import com.arco2121.swissy.Utility.LogPrinter;
@@ -47,10 +54,11 @@ import com.google.android.gms.location.*;
 import java.util.Locale;
 import java.util.Objects;
 
-public class Main extends AppCompatActivity implements GeoCompassListener, TorchListener, LivellaListener, ImpactListener, AmbientStatusListener, RulerListener {
+public class Main extends AppCompatActivity implements GeoCompassListener, TorchListener, LivellaListener, ImpactListener, AmbientStatusListener, RulerListener, ScannerEyeListener {
     private LocationProvider locationManager;
     private SensorManager sensors;
     private CameraManager camera;
+    private ClipboardManager clipboard;
     private GeoCompass compass = null;
     private AmbientStatus ambientStatus = null;
     private AmbientNoise ambientNoice = null;
@@ -58,6 +66,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private Torch torch = null;
     private Impact impact = null;
     private Ruler ruler = null;
+    private ScannerEye eyeScanner = null;
     String[] availableTools;
     int indexTool = 0;
     private float currentNorth = 0f;
@@ -71,6 +80,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
     private int prec = 1;
     private float oldpitch = 0f;
     private float oldroll = 0f;
+    private boolean activeScanner = false;
 
     //App
     @SuppressLint({"ClickableViewAccessibility", "MissingPermission"})
@@ -88,6 +98,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         String appName = getString(R.string.app_name);
         sensors = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         camera = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         PermissionManager permissionManager = new PermissionManager(this);
         locationManager = new LocationProvider(LocationServices.getFusedLocationProviderClient(Main.this), (LocationManager) getSystemService(Context.LOCATION_SERVICE));
         locationManager.getLocation(permissionManager, locationRequested -> {
@@ -98,6 +109,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             try { impact = (Impact) SharedObjects.addObj("Impact", new Impact(sensors), new Object[]{ R.drawable.impact, R.layout.impact_view}); impact.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { ruler = (Ruler) SharedObjects.addObj("Ruler", new Ruler(this), new Object[]{ R.drawable.ruler, R.layout.ruler_view }); ruler.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             try { ambientNoice = new AmbientNoise(this); ambientNoice.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
+            try { eyeScanner = (ScannerEye) SharedObjects.addObj("Scanner", new ScannerEye(this), new Object[]{ R.drawable.object, R.layout.scanner_eye_view }); eyeScanner.setListener(this);} catch (Exception e) { LogPrinter.printToast(this, e.getMessage()); }
             //UI
             ConstraintLayout mai = findViewById(R.id.main);
             ImageButton settings = findViewById(R.id.settingsBt);
@@ -194,6 +206,7 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             ambientNoice.stopSensors();
         }
     }
+    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     @Override
     protected void onResume() {
         super.onResume();
@@ -237,6 +250,13 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
         Ruler.RulerUnit[] units = {Ruler.RulerUnit.CENTIMETER, Ruler.RulerUnit.MILLIMETER, Ruler.RulerUnit.INCH, Ruler.RulerUnit.PIXEL};
         ruler.setCalibrationFactor(1f);
         reloadIn.setAlpha(0f);
+        ImageButton scannerMode = findViewById(R.id.scannerMode);
+        TextView eyeMode = findViewById(R.id.eyeMode);
+        TextView scannerResult = findViewById(R.id.scannerResult);
+        PreviewView prev = findViewById(R.id.previewScanner);
+        TextView eyeResu = findViewById(R.id.eyeResult);
+        ImageView preV = findViewById(R.id.prevN);
+        eyeScanner.stopSensors();
         if(statusBox != null) {
             statusBox.setOnTouchListener((view, event) -> animateButton(view, event, scale, scale, duration, () -> {}, true));
             statusBox1.setOnTouchListener((view, event) -> animateButton(view, event, scale, scale, duration, () -> {}, true));
@@ -413,6 +433,51 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
                     changeMode.setText(units[indexUnit].toString().toUpperCase(Locale.ROOT));
                 });
             },true));
+        }
+        if(scannerMode != null) {
+            eyeScanner.preview.setSurfaceProvider(prev.getSurfaceProvider());
+            if(eyeScanner.scannerMode) {
+                scannerMode.setImageResource(R.drawable.scanner);
+                eyeMode.setText("Mode\nCode");
+            }
+            else {
+                scannerMode.setImageResource(R.drawable.object);
+                eyeMode.setText("Mode\nObject");
+            }
+            scannerMode.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
+                eyeScanner.changeAnalisis(Main.this);
+                if(eyeScanner.scannerMode) {
+                    scannerMode.setImageResource(R.drawable.scanner);
+                    eyeMode.setText("Mode\nCode");
+                }
+                else {
+                    scannerMode.setImageResource(R.drawable.object);
+                    eyeMode.setText("Mode\nObject");
+                }
+            }, true));
+            scannerResult.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
+                activeScanner = !activeScanner;
+                if(activeScanner) {
+                    eyeScanner.startSensors(Main.this);
+                    prev.setAlpha(1f);
+                    preV.setAlpha(0f);
+                }
+                else {
+                    eyeScanner.stopSensors();
+                    prev.setAlpha(0f);
+                    preV.setAlpha(1f);
+                }
+            }, true));
+            eyeResu.setOnTouchListener((v, event) -> animateButton(v, event, scale, scale, duration, () -> {
+                String[] data = eyeResu.getText().toString().split(":");
+                String result = data.length > 1 ? data[1] : null;
+                if(result == null)
+                    LogPrinter.printToast(Main.this, "Nothing to copy");
+                else {
+                    ClipData clip = ClipData.newPlainText("scanner_eye_swissy", result);
+                    clipboard.setPrimaryClip(clip);
+                }
+            }, true));
         }
     }
 
@@ -666,5 +731,23 @@ public class Main extends AppCompatActivity implements GeoCompassListener, Torch
             if(SettingsManager.getPropreties(this).getBoolean("vibration", false)) VibrationMaker.vibrate(isura, VibrationMaker.Vibration.Medium);
             isura.setText(out);
         } catch (Exception ignored) { }
+    }
+
+    //Scanner Eye
+    @Override
+    public void onScanCode(String result) {
+        try {
+            TextView eyeR = findViewById(R.id.eyeResult);
+            eyeR.setText(String.format("Code : %s", result));
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void onScanObject(String result, float precision) {
+        try {
+            TextView eyeR = findViewById(R.id.eyeResult);
+            eyeR.setText(String.format("Object : %s (%.0f", result, precision) + "%)");
+        } catch (Exception ignored) {
+        }
     }
 }

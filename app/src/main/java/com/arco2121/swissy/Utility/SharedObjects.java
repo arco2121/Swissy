@@ -42,9 +42,12 @@ public class SharedObjects {
                 window.animate().scaleX(littleX).scaleY(littleY).setDuration(duration).start();
                 break;
 
-            case MotionEvent.ACTION_UP:
-
+            case MotionEvent.ACTION_OUTSIDE:
             case MotionEvent.ACTION_CANCEL:
+                window.animate().scaleX(1f).scaleY(1f).setDuration(duration).start();
+                break;
+
+            case MotionEvent.ACTION_UP:
                 window.animate().scaleX(1f).scaleY(1f).setDuration(duration)
                         .withEndAction(func)
                         .start();
@@ -60,9 +63,12 @@ public class SharedObjects {
                 window.animate().scaleX(littleX).scaleY(littleY).setDuration(duration).start();
                 break;
 
-            case MotionEvent.ACTION_UP:
-
+            case MotionEvent.ACTION_OUTSIDE:
             case MotionEvent.ACTION_CANCEL:
+                window.animate().scaleX(1f).scaleY(1f).setDuration(duration).start();
+                break;
+
+            case MotionEvent.ACTION_UP:
                 window.animate().scaleX(1f).scaleY(1f).setDuration(duration)
                         .withEndAction(func)
                         .start();
@@ -73,7 +79,7 @@ public class SharedObjects {
     }
 
     public static int calibrateSensorsDelay(Context ct, int prio) {
-        if(!SettingsManager.getPropreties(ct).getBoolean("energy_safer", false)) return prio == 1 ? SensorManager.SENSOR_DELAY_GAME :  SensorManager.SENSOR_DELAY_FASTEST;
+        if(!SettingsManager.getPropreties(ct).getBoolean("energysafer", false)) return prio == 1 ? SensorManager.SENSOR_DELAY_GAME :  SensorManager.SENSOR_DELAY_FASTEST;
         else return SensorManager.SENSOR_DELAY_NORMAL;
     }
 }

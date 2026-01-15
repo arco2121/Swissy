@@ -8,6 +8,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.arco2121.swissy.Tools.ToolListener;
 import com.arco2121.swissy.Tools.ToolStructure;
 import com.arco2121.swissy.Utility.VibrationMaker;
 
@@ -52,7 +53,7 @@ public class Livella implements ToolStructure {
     }
 
     @Override
-    public void setListener(Object listener) {
+    public void setListener(ToolListener listener) {
         this.listener = (LivellaListener) listener;
     }
 

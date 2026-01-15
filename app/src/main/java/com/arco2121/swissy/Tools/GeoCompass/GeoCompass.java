@@ -9,6 +9,7 @@ import android.os.Build;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
+import com.arco2121.swissy.Tools.ToolListener;
 import com.arco2121.swissy.Tools.ToolStructure;
 import com.arco2121.swissy.Utility.VibrationMaker;
 
@@ -164,7 +165,7 @@ public class GeoCompass implements ToolStructure {
     }
 
     @Override
-    public void setListener(Object listener) {
+    public void setListener(ToolListener listener) {
         this.listener = (GeoCompassListener) listener;
     }
 
@@ -214,9 +215,11 @@ public class GeoCompass implements ToolStructure {
         float y = event.values[1];
         float z = event.values[2];
         float magneticStrength = (float) Math.sqrt(x * x + y * y + z * z);
+        //Normalisation
+        magneticStrength = Math.round(magneticStrength/10) * 10;
         float magneticLevel;
         if (magneticStrength < 20) magneticLevel = 0;
-        else if (magneticStrength <= 65) magneticLevel = 1;
+        else if (magneticStrength <= 60) magneticLevel = 1;
         else if (magneticStrength <= 90) magneticLevel = 2;
         else magneticLevel = 3;
         if (listener != null) {

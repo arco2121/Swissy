@@ -7,6 +7,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
+import com.arco2121.swissy.Tools.ToolListener;
 import com.arco2121.swissy.Tools.ToolStructure;
 
 public class Ruler implements ToolStructure {
@@ -57,7 +58,7 @@ public class Ruler implements ToolStructure {
     public void stopSensors() { }
 
     @Override
-    public void setListener(Object listener) {
+    public void setListener(ToolListener listener) {
         this.listener = (RulerListener) listener;
     }
 }

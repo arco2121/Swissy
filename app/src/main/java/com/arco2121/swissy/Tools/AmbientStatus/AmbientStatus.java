@@ -7,6 +7,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import com.arco2121.swissy.Tools.ToolListener;
 import com.arco2121.swissy.Tools.ToolStructure;
 
 public class AmbientStatus implements ToolStructure {
@@ -67,7 +68,7 @@ public class AmbientStatus implements ToolStructure {
         if(umiditySensor != null) sm.unregisterListener(umiditySensorListen, umiditySensor);
     }
     @Override
-    public void setListener(Object listener) {
+    public void setListener(ToolListener listener) {
         this.listener = (AmbientStatusListener) listener;
     }
 }

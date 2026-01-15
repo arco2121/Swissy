@@ -11,6 +11,7 @@ import android.os.Looper;
 import androidx.annotation.RequiresPermission;
 
 import com.arco2121.swissy.Managers.SettingsManager;
+import com.arco2121.swissy.Tools.ToolListener;
 import com.arco2121.swissy.Tools.ToolStructure;
 
 import java.util.concurrent.ExecutorService;
@@ -22,19 +23,18 @@ public class AmbientNoise implements ToolStructure {
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
-
     private AudioRecord audioRecord;
     private int bufferSize;
-
     private final AtomicBoolean isRecording = new AtomicBoolean(false);
     private ExecutorService executor;
-
     private AmbientStatusListener listener;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
     public static final String[] permissionList = {
             Manifest.permission.RECORD_AUDIO
     };
+    private static final double ALPHA = 0.3;
+    private double smoothedDecibels = 0;
+    private boolean isFirstReading = true;
 
     @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     public AmbientNoise(Context c) throws Exception {
@@ -61,7 +61,7 @@ public class AmbientNoise implements ToolStructure {
     }
 
     @Override
-    public void setListener(Object listener) {
+    public void setListener(ToolListener listener) {
         this.listener = (AmbientStatusListener) listener;
     }
 
@@ -112,12 +112,8 @@ public class AmbientNoise implements ToolStructure {
 
     private void processAudio() {
         short[] buffer = new short[bufferSize / 2];
-
-        while (isRecording.get() &&
-                !Thread.currentThread().isInterrupted()) {
-
+        while (isRecording.get() && !Thread.currentThread().isInterrupted()) {
             int read = audioRecord.read(buffer, 0, buffer.length);
-
             if (read <= 0) continue;
 
             double sum = 0;
@@ -128,10 +124,15 @@ public class AmbientNoise implements ToolStructure {
             double rms = Math.sqrt(sum / read);
             double decibels = 20 * Math.log10(rms + 1);
 
+            if (isFirstReading) {
+                smoothedDecibels = decibels;
+                isFirstReading = false;
+            } else {
+                smoothedDecibels = ALPHA * decibels + (1 - ALPHA) * smoothedDecibels;
+            }
+
             if (listener != null) {
-                mainHandler.post(() ->
-                        listener.onNoise(decibels)
-                );
+                mainHandler.post(() -> listener.onNoise(smoothedDecibels));
             }
         }
     }

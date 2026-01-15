@@ -15,6 +15,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.view.WindowManager;
 import androidx.annotation.RequiresApi;
+
+import com.arco2121.swissy.Tools.ToolListener;
 import com.arco2121.swissy.Utility.LogPrinter;
 import com.arco2121.swissy.Tools.ToolStructure;
 
@@ -90,7 +92,7 @@ public class Torch implements ToolStructure {
     }
 
     @Override
-    public void setListener(Object listener) {
+    public void setListener(ToolListener listener) {
         this.listener = (TorchListener) listener;
     }
 

@@ -5,5 +5,5 @@ import android.content.Context;
 public interface ToolStructure {
     void startSensors(Context c);
     void stopSensors();
-    void setListener(Object listener);
+    void setListener(ToolListener listener);
 }
